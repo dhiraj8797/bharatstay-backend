@@ -394,7 +394,8 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
         email: userSignUp.email,
         phoneNumber: userSignUp.phoneNumber,
         createdAt: userSignUp.createdAt,
-        status: userSignUp.status
+        status: userSignUp.status,
+        totalBookings: 0 // This would come from bookings collection in a real implementation
       }
     });
   } catch (error: any) {
@@ -402,6 +403,38 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
     res.status(500).json({
       success: false,
       message: 'Error fetching user details',
+      error: error.message
+    });
+  }
+};
+
+// Delete User Account
+export const deleteUserAccount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    const user = await UserSignUp.findById(userId);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+
+    // Delete the user
+    await UserSignUp.findByIdAndDelete(userId);
+
+    res.status(200).json({
+      success: true,
+      message: 'User account deleted successfully'
+    });
+  } catch (error: any) {
+    console.error('Error in deleteUserAccount:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting user account',
       error: error.message
     });
   }
