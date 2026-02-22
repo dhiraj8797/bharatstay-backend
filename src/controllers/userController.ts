@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import UserSignUp from '../models/UserSignUp';
 import { validationResult } from 'express-validator';
 import { tempStorage } from '../utils/tempStorage';
@@ -12,6 +13,15 @@ const generateOTP = (): string => {
 // Register User with Password (No Firebase)
 export const registerUserWithPassword = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again later.'
+      });
+      return;
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ success: false, errors: errors.array() });
@@ -69,6 +79,15 @@ export const registerUserWithPassword = async (req: Request, res: Response): Pro
 // User Login with Email/Mobile and Password
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again later.'
+      });
+      return;
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ success: false, errors: errors.array() });

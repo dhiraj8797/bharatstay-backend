@@ -46,7 +46,8 @@ app.use(express.urlencoded({ extended: true }));
 // Connect to MongoDB
 connectDB().catch((err) => {
   console.error("DB Error:", err);
-  process.exit(1);
+  console.log("Continuing without database connection...");
+  // Don't exit process, continue running but with limited functionality
 });
 
 // Routes

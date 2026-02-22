@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import { validationResult } from "express-validator";
 import { randomUUID } from "crypto";
-import type mongoose from "mongoose";
 
 import HostSignUp from "../models/HostSignUp";
 
@@ -127,6 +127,15 @@ async function generateUniqueHostId(
  */
 export const registerHostWithPassword = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again later.'
+      });
+      return;
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ success: false, errors: errors.array() });
@@ -208,6 +217,15 @@ export const registerHostWithPassword = async (req: Request, res: Response): Pro
  */
 export const loginHost = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again later.'
+      });
+      return;
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ success: false, errors: errors.array() });
