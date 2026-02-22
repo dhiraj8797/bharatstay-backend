@@ -408,6 +408,86 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
   }
 };
 
+// Update User Profile
+export const updateUserProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const { fullName, email, phoneNumber } = req.body;
+
+    const user = await UserSignUp.findById(userId);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+
+    // Check if email or phone is already used by another user
+    if (email && email !== user.email) {
+      const existingUser = await UserSignUp.findOne({ email, _id: { $ne: userId } });
+      if (existingUser) {
+        res.status(409).json({
+          success: false,
+          message: 'Email is already in use by another account'
+        });
+        return;
+      }
+    }
+
+    if (phoneNumber && phoneNumber !== user.phoneNumber) {
+      const existingUser = await UserSignUp.findOne({ phoneNumber, _id: { $ne: userId } });
+      if (existingUser) {
+        res.status(409).json({
+          success: false,
+          message: 'Phone number is already in use by another account'
+        });
+        return;
+      }
+    }
+
+    // Update user profile
+    const updatedUser = await UserSignUp.findByIdAndUpdate(
+      userId,
+      {
+        fullName: fullName || user.fullName,
+        email: email || user.email,
+        phoneNumber: phoneNumber || user.phoneNumber,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update user profile'
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        phoneNumber: updatedUser.phoneNumber,
+        updatedAt: updatedUser.updatedAt
+      }
+    });
+  } catch (error: any) {
+    console.error('Error in updateUserProfile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating user profile',
+      error: error.message
+    });
+  }
+};
+
 // Delete User Account
 export const deleteUserAccount = async (req: Request, res: Response): Promise<void> => {
   try {

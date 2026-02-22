@@ -51,7 +51,10 @@ router.post('/resend-otp', userController.resendUserOTP);
 // Route 5: Get User Details
 router.get('/:userId', userController.getUserDetails);
 
-// Route 6: Delete User Account
+// Route 6: Update User Profile
+router.put('/:userId', userController.updateUserProfile);
+
+// Route 7: Delete User Account
 router.delete('/:userId', userController.deleteUserAccount);
 
 export default router;
