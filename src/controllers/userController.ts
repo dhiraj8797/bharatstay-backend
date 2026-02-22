@@ -388,7 +388,14 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json({
       success: true,
-      data: userSignUp
+      user: {
+        id: userSignUp._id,
+        fullName: userSignUp.fullName,
+        email: userSignUp.email,
+        phoneNumber: userSignUp.phoneNumber,
+        createdAt: userSignUp.createdAt,
+        status: userSignUp.status
+      }
     });
   } catch (error: any) {
     console.error('Error in getUserDetails:', error);
