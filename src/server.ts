@@ -23,7 +23,9 @@ const app: Express = express();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:5173"],
+    origin: ["https://www.bharat-stay.com", "https://bharat-stay.com", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
@@ -38,6 +40,10 @@ connectDB().catch((err) => {
 });
 
 // Routes
+app.get("/", (req: Request, res: Response) => {
+  res.json({ ok: true, message: "BharatStay API running" });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/host", hostRoutes);
 app.use("/api/user", userRoutes);
