@@ -1,9 +1,170 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import Stay from '../models/Stay';
+import HostDashBoardStay from '../models/HostDashBoardStay';
 import Booking from '../models/Booking';
 import Review from '../models/Review';
 import Payout from '../models/Payout';
+
+// Sync host stays to public Stay collection
+export const syncHostStaysToPublic = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { hostId } = req.params;
+
+    // Get all active stays from HostDashBoardStay
+    const hostStays = await HostDashBoardStay.find({ 
+      hostId, 
+      status: 'active' 
+    });
+
+    for (const hostStay of hostStays) {
+      // Check if stay already exists in public collection
+      const existingStay = await Stay.findOne({ 
+        hostId, 
+        stayName: hostStay.stayName 
+      });
+
+      if (!existingStay) {
+        // Create new public stay entry
+        const publicStay = new Stay({
+          hostId: hostStay.hostId,
+          stayName: hostStay.stayName,
+          stayType: hostStay.stayType as any,
+          propertyAge: hostStay.propertyAge,
+          address: hostStay.address,
+          city: hostStay.city,
+          state: hostStay.state,
+          pincode: hostStay.pincode,
+          location: hostStay.currentLocation ? {
+            latitude: 0, // Default - should be updated with actual coordinates
+            longitude: 0
+          } : {
+            latitude: 0,
+            longitude: 0
+          },
+          description: hostStay.description || '',
+          houseRules: hostStay.houseRules || '',
+          checkInTime: hostStay.checkInTime || '12:00',
+          checkOutTime: hostStay.checkOutTime || '11:00',
+          photos: hostStay.photos || [],
+          coverImageIndex: 0,
+          amenities: hostStay.amenities || [],
+          pricing: hostStay.pricing || {
+            basePrice: 1000,
+            weekendPrice: 1200,
+            festivalPrice: 1500,
+            cleaningFee: 100,
+            extraGuestCharge: 200,
+            securityDeposit: 1000,
+            smartPricing: true
+          },
+          capacity: {
+            maxGuests: hostStay.numberOfRooms * 2 || 2,
+            bedrooms: hostStay.numberOfRooms || 1,
+            bathrooms: Math.ceil(hostStay.numberOfRooms / 2) || 1,
+            beds: hostStay.numberOfRooms || 1
+          },
+          status: 'active',
+          views: 0,
+          bookings: 0,
+          averageRating: 0,
+          totalReviews: 0
+        });
+
+        await publicStay.save();
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Synced ${hostStays.length} stays to public collection`
+    });
+  } catch (error: any) {
+    console.error('Sync stays error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to sync stays',
+      error: error.message
+    });
+  }
+};
+
+// Get all stays for user search
+export const getAllStays = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { city, state, stayType, minPrice, maxPrice, checkIn, checkOut, guests } = req.query;
+
+    // Build filter criteria
+    const filter: any = { status: 'active' };
+
+    if (city) filter.city = new RegExp(city as string, 'i');
+    if (state) filter.state = new RegExp(state as string, 'i');
+    if (stayType) filter.stayType = stayType;
+    
+    if (minPrice || maxPrice) {
+      filter['pricing.basePrice'] = {};
+      if (minPrice) filter['pricing.basePrice'].$gte = Number(minPrice);
+      if (maxPrice) filter['pricing.basePrice'].$lte = Number(maxPrice);
+    }
+
+    if (guests) {
+      filter['capacity.maxGuests'] = { $gte: Number(guests) };
+    }
+
+    // Find stays with filters
+    const stays = await Stay.find(filter)
+      .select('-__v')
+      .sort({ averageRating: -1, createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      stays,
+      count: stays.length
+    });
+  } catch (error: any) {
+    console.error('Get all stays error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch stays',
+      error: error.message
+    });
+  }
+};
+
+// Get stay by ID for details page
+export const getStayById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { stayId } = req.params;
+
+    const stay = await Stay.findById(stayId)
+      .populate('hostId', 'fullName email phoneNumber')
+      .select('-__v');
+
+    if (!stay) {
+      res.status(404).json({
+        success: false,
+        message: 'Stay not found'
+      });
+      return;
+    }
+
+    // Increment view count
+    stay.views = (stay.views || 0) + 1;
+    await stay.save();
+
+    res.status(200).json({
+      success: true,
+      stay
+    });
+  } catch (error: any) {
+    console.error('Get stay by ID error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch stay details',
+      error: error.message
+    });
+  }
+};
 
 // Get dashboard statistics
 export const getDashboardStats = async (req: Request, res: Response): Promise<void> => {

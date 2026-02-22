@@ -23,7 +23,17 @@ const app: Express = express();
 // Middleware
 app.use(
   cors({
-    origin: ["https://www.bharat-stay.com", "https://bharat-stay.com", "http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:5173"],
+    origin: [
+      "https://www.bharat-stay.com", 
+      "https://bharat-stay.com",
+      "https://bharatstay.netlify.app",
+      "https://bharatstay.vercel.app",
+      "http://localhost:8080", 
+      "http://localhost:8081", 
+      "http://localhost:8082", 
+      "http://localhost:8084", 
+      "http://localhost:5173"
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

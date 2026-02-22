@@ -34,7 +34,30 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
       cloakRoomPrice,
       cloakRoomMaxHrs,
       cloakRoomExtraCharge,
+      pricing,
     } = req.body;
+
+    // Handle photo URLs - if uploaded via multer, they'll be in req.files
+    let photoUrls: string[] = [];
+    if (req.files && Array.isArray(req.files)) {
+      photoUrls = (req.files as Express.Multer.File[]).map(file => 
+        `/uploads/stay-photos/${file.filename}`
+      );
+    } else if (photos && Array.isArray(photos)) {
+      photoUrls = photos;
+    }
+
+    // Default pricing if not provided
+    const defaultPricing = {
+      basePrice: 1000,
+      weekendPrice: 1200,
+      festivalPrice: 1500,
+      cleaningFee: 100,
+      extraGuestCharge: 200,
+      securityDeposit: 1000,
+      smartPricing: true,
+      ...pricing
+    };
 
     const newStay = new HostDashBoardStay({
       hostId,
@@ -53,12 +76,13 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
       checkInTime,
       checkOutTime,
       allowPets,
-      photos,
+      photos: photoUrls,
       amenities,
       offerCloakRoom,
       cloakRoomPrice,
       cloakRoomMaxHrs,
       cloakRoomExtraCharge,
+      pricing: defaultPricing,
       status: 'pending',
     });
 

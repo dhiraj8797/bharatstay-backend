@@ -10,6 +10,9 @@ import {
   deleteStay,
   updateStayPricing,
   toggleStayStatus,
+  getAllStays,
+  getStayById,
+  syncHostStaysToPublic,
 } from '../controllers/stayController';
 
 const router = express.Router();
@@ -43,6 +46,11 @@ const upload = multer({
 
 // Dashboard statistics
 router.get('/dashboard/:hostId', getDashboardStats);
+
+// Public routes for stay search and viewing
+router.get('/', getAllStays); // Get all stays with filters
+router.get('/details/:stayId', getStayById); // Get stay details by ID
+router.post('/sync/:hostId', syncHostStaysToPublic); // Sync host stays to public collection
 
 // Stay management
 router.post(

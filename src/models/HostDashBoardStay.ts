@@ -23,6 +23,15 @@ export interface IHostDashBoardStay extends Document {
   cloakRoomPrice?: number;
   cloakRoomMaxHrs?: number;
   cloakRoomExtraCharge?: number;
+  pricing: {
+    basePrice: number;
+    weekendPrice: number;
+    festivalPrice: number;
+    cleaningFee: number;
+    extraGuestCharge: number;
+    securityDeposit: number;
+    smartPricing: boolean;
+  };
   status: 'active' | 'inactive' | 'pending';
   createdAt: Date;
   updatedAt: Date;
@@ -142,6 +151,43 @@ const HostDashBoardStaySchema: Schema = new Schema(
       type: Number,
       min: 0,
       default: 0,
+    },
+    pricing: {
+      basePrice: {
+        type: Number,
+        required: true,
+        min: 0,
+        default: 1000,
+      },
+      weekendPrice: {
+        type: Number,
+        min: 0,
+        default: 1200,
+      },
+      festivalPrice: {
+        type: Number,
+        min: 0,
+        default: 1500,
+      },
+      cleaningFee: {
+        type: Number,
+        min: 0,
+        default: 100,
+      },
+      extraGuestCharge: {
+        type: Number,
+        min: 0,
+        default: 200,
+      },
+      securityDeposit: {
+        type: Number,
+        min: 0,
+        default: 1000,
+      },
+      smartPricing: {
+        type: Boolean,
+        default: true,
+      },
     },
     status: {
       type: String,
