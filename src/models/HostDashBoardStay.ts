@@ -205,5 +205,14 @@ const HostDashBoardStaySchema: Schema = new Schema(
 HostDashBoardStaySchema.index({ hostId: 1, status: 1 });
 HostDashBoardStaySchema.index({ city: 1, status: 1 });
 HostDashBoardStaySchema.index({ stayType: 1 });
+HostDashBoardStaySchema.index({ status: 1 });
+
+// Text search index for location search
+HostDashBoardStaySchema.index({
+  city: 'text',
+  state: 'text', 
+  stayName: 'text',
+  description: 'text'
+});
 
 export default mongoose.model<IHostDashBoardStay>('HostDashBoardStay', HostDashBoardStaySchema);
