@@ -11,6 +11,7 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    // Handle FormData - extract fields from req.body or req.files
     const {
       hostId,
       stayName,
@@ -28,13 +29,19 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
       checkInTime,
       checkOutTime,
       allowPets,
-      photos,
       amenities,
       offerCloakRoom,
       cloakRoomPrice,
       cloakRoomMaxHrs,
       cloakRoomExtraCharge,
-      pricing,
+      // Pricing fields from FormData
+      'pricing.basePrice': basePrice,
+      'pricing.weekendPrice': weekendPrice,
+      'pricing.festivalPrice': festivalPrice,
+      'pricing.cleaningFee': cleaningFee,
+      'pricing.extraGuestCharge': extraGuestCharge,
+      'pricing.securityDeposit': securityDeposit,
+      'pricing.smartPricing': smartPricing,
     } = req.body;
 
     // Handle photo URLs - if uploaded via multer, they'll be in req.files
@@ -43,21 +50,22 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
       photoUrls = (req.files as Express.Multer.File[]).map(file => 
         `/uploads/stay-photos/${file.filename}`
       );
-    } else if (photos && Array.isArray(photos)) {
-      photoUrls = photos;
+    } else if (req.body.photos && Array.isArray(req.body.photos)) {
+      photoUrls = req.body.photos;
     }
 
-    // Default pricing if not provided
-    const defaultPricing = {
-      basePrice: 1000,
-      weekendPrice: 1200,
-      festivalPrice: 1500,
-      cleaningFee: 100,
-      extraGuestCharge: 200,
-      securityDeposit: 1000,
-      smartPricing: true,
-      ...pricing
+    // Create pricing object from FormData fields
+    const pricing = {
+      basePrice: parseInt(basePrice) || 1000,
+      weekendPrice: parseInt(weekendPrice) || 1200,
+      festivalPrice: parseInt(festivalPrice) || 1500,
+      cleaningFee: parseInt(cleaningFee) || 100,
+      extraGuestCharge: parseInt(extraGuestCharge) || 200,
+      securityDeposit: parseInt(securityDeposit) || 1000,
+      smartPricing: smartPricing === 'true' || smartPricing === true,
     };
+
+    console.log('Parsed pricing data:', pricing);
 
     const newStay = new HostDashBoardStay({
       hostId,
@@ -82,7 +90,7 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
       cloakRoomPrice,
       cloakRoomMaxHrs,
       cloakRoomExtraCharge,
-      pricing: defaultPricing,
+      pricing: pricing,
       status: 'pending',
     });
 
