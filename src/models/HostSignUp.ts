@@ -31,8 +31,11 @@ export interface IHostSignUp extends Document {
   city: string;
   pincode: string;
   aadharPath?: string;
+  aadharNumber?: string;
   panPath?: string;
+  panNumber?: string;
   licensePath?: string;
+  licenseNumber?: string;
   propertyFullAddress?: string;
   propertyCity?: string;
   propertyState?: string;
@@ -104,8 +107,11 @@ const hostSignUpSchema = new Schema<IHostSignUp>({
     match: [/^\d{6}$/, "Pincode must be 6 digits"],
   },
   aadharPath: { type: String, default: "" },
+  aadharNumber: { type: String, default: "" },
   panPath: { type: String, default: "" },
+  panNumber: { type: String, default: "" },
   licensePath: { type: String, default: "" },
+  licenseNumber: { type: String, default: "" },
   propertyFullAddress: { type: String, default: "" },
   propertyCity: { type: String, default: "" },
   propertyState: { type: String, default: "" },

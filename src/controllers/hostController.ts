@@ -916,7 +916,7 @@ export const submitHostDocuments = async (req: Request, res: Response): Promise<
 
   try {
 
-    const { hostId } = req.body;
+    const { hostId, aadharNumber, panNumber, licenseNumber } = req.body;
 
 
 
@@ -936,6 +936,48 @@ export const submitHostDocuments = async (req: Request, res: Response): Promise<
 
 
 
+    // Validate mandatory documents: Aadhar and PAN
+    if (!files?.aadhar?.[0]) {
+      res.status(400).json({ success: false, message: "Aadhar document is required" });
+      return;
+    }
+
+    if (!files?.pan?.[0]) {
+      res.status(400).json({ success: false, message: "PAN document is required" });
+      return;
+    }
+
+    // Validate mandatory document numbers
+    if (!aadharNumber) {
+      res.status(400).json({ success: false, message: "Aadhar number is required" });
+      return;
+    }
+
+    if (!panNumber) {
+      res.status(400).json({ success: false, message: "PAN number is required" });
+      return;
+    }
+
+    // Validate Aadhar number format (12 digits with hyphens)
+    if (!/^\d{4}-\d{4}-\d{4}$/.test(aadharNumber)) {
+      res.status(400).json({ success: false, message: "Please enter a valid Aadhar number (e.g., 0000-0000-0000)" });
+      return;
+    }
+
+    // Validate PAN number format (10 characters: 5 letters, 4 digits, 1 letter)
+    if (!/^[A-Z]{5}\d{4}[A-Z]{1}$/.test(panNumber.toUpperCase().replace(/\s/g, ''))) {
+      res.status(400).json({ success: false, message: "Please enter a valid PAN number (e.g., ELDPK0667G)" });
+      return;
+    }
+
+    // Optional: Validate license number if provided
+    if (licenseNumber && !/^[A-Z]{2}\d{2}\d{4}\d{7}$/.test(licenseNumber.toUpperCase().replace(/\s/g, ''))) {
+      res.status(400).json({ success: false, message: "Please enter a valid driving license number" });
+      return;
+    }
+
+
+
     const hostSignUp = await HostSignUp.findById(hostId);
 
     if (!hostSignUp) {
@@ -948,11 +990,17 @@ export const submitHostDocuments = async (req: Request, res: Response): Promise<
 
 
 
+    // Store document paths and numbers
     if (files?.aadhar?.[0]) hostSignUp.aadharPath = files.aadhar[0].path;
-
     if (files?.pan?.[0]) hostSignUp.panPath = files.pan[0].path;
-
     if (files?.license?.[0]) hostSignUp.licensePath = files.license[0].path;
+
+    // Store document numbers
+    hostSignUp.aadharNumber = aadharNumber.replace(/[-\s]/g, '');
+    hostSignUp.panNumber = panNumber.toUpperCase().replace(/\s/g, '');
+    if (licenseNumber) {
+      hostSignUp.licenseNumber = licenseNumber.toUpperCase().replace(/\s/g, '');
+    }
 
 
 
