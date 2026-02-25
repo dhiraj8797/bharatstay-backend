@@ -110,6 +110,8 @@ router.get('/search', searchStays); // Search stays with advanced filters
 
 router.get('/details/:stayId', getStayDetailsFromHost); // Get stay details by ID from HostDashBoardStay
 
+router.get('/edit/:stayId', getStayForEdit); // Get stay data for editing
+
 router.get('/legacy/:stayId', getStayById); // Legacy route for Stay model
 
 router.post('/sync/:hostId', syncHostStaysToPublic); // Sync host stays to public collection

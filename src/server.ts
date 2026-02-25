@@ -15,6 +15,7 @@ import promotionRoutes from "./routes/promotionRoutes";
 import placesRoutes from "./routes/placesRoutes";
 import hostBankDetailsRoutes from "./routes/hostBankDetailsRoutes";
 import hostDashboardStayRoutes from "./routes/hostDashboardStayRoutes";
+import contactRoutes from "./routes/contact";
 
 dotenv.config();
 
@@ -66,6 +67,7 @@ app.use("/api/promotion", promotionRoutes);
 app.use("/api/places", placesRoutes);
 app.use("/api/host-dashboard-stay", hostDashboardStayRoutes);
 app.use("/api/host-bank-details", hostBankDetailsRoutes);
+app.use("/api", contactRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
