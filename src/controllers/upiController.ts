@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 // UPI verification controller
-export const verifyUPI = async (req: Request, res: Response) => {
+export const verifyUPI = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { upiId } = req.body;
 
@@ -47,7 +47,7 @@ export const verifyUPI = async (req: Request, res: Response) => {
     const verificationResult = await simulateUPIVerification(upiId);
 
     if (verificationResult.valid) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'UPI ID verified successfully',
         data: {
@@ -59,7 +59,7 @@ export const verifyUPI = async (req: Request, res: Response) => {
         }
       });
     } else {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: verificationResult.message || 'UPI ID verification failed'
       });
@@ -67,7 +67,7 @@ export const verifyUPI = async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('UPI verification error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to verify UPI ID',
       error: error.message

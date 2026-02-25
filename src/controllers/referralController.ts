@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Referral from '../models/Referral';
 
 // Get or create referral for a user
-export const getUserReferral = async (req: Request, res: Response) => {
+export const getUserReferral = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { userId } = req.params;
     
@@ -18,21 +18,28 @@ export const getUserReferral = async (req: Request, res: Response) => {
     
     if (!referral) {
       // Create new referral for this user
-      referral = await Referral.createReferral(userId);
+      referral = await (Referral as any).createReferral(userId);
     }
 
-    res.status(200).json({
-      success: true,
-      data: {
-        referralCode: referral.referralCode,
-        referralLink: referral.referralLink,
-        status: referral.status
-      }
+    if (referral) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          referralCode: referral.referralCode,
+          referralLink: referral.referralLink,
+          status: referral.status
+        }
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to create referral'
     });
 
   } catch (error: any) {
     console.error('Get user referral error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get referral information',
       error: error.message
@@ -41,7 +48,7 @@ export const getUserReferral = async (req: Request, res: Response) => {
 };
 
 // Get referral stats for a user
-export const getReferralStats = async (req: Request, res: Response) => {
+export const getReferralStats = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { userId } = req.params;
     
@@ -52,10 +59,10 @@ export const getReferralStats = async (req: Request, res: Response) => {
       });
     }
 
-    const stats = await Referral.getReferralStats(userId);
-    const recentReferrals = await Referral.getRecentReferrals(userId, 5);
+    const stats = await (Referral as any).getReferralStats(userId);
+    const recentReferrals = await (Referral as any).getRecentReferrals(userId, 5);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         stats,
@@ -65,7 +72,7 @@ export const getReferralStats = async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('Get referral stats error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to get referral stats',
       error: error.message
@@ -74,7 +81,7 @@ export const getReferralStats = async (req: Request, res: Response) => {
 };
 
 // Track referral signup
-export const trackReferralSignup = async (req: Request, res: Response) => {
+export const trackReferralSignup = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { referralCode } = req.body;
     const { userId, email, phone } = req.body;
@@ -88,13 +95,15 @@ export const trackReferralSignup = async (req: Request, res: Response) => {
       });
     }
 
-    const referral = await Referral.trackSignup(referralCode, {
+    const refereeData = {
       userId,
       email,
       phone,
       ipAddress,
       userAgent
-    });
+    };
+
+    const referral = await (Referral as any).trackSignup(referralCode, refereeData);
 
     if (!referral) {
       return res.status(404).json({
@@ -103,7 +112,7 @@ export const trackReferralSignup = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Referral signup tracked successfully',
       data: {
@@ -115,7 +124,7 @@ export const trackReferralSignup = async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('Track referral signup error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to track referral signup',
       error: error.message
@@ -124,18 +133,19 @@ export const trackReferralSignup = async (req: Request, res: Response) => {
 };
 
 // Track first booking for referral
-export const trackFirstBooking = async (req: Request, res: Response) => {
+export const trackFirstBooking = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { userId } = req.body;
+    const { bookingId } = req.body;
 
-    if (!userId) {
+    if (!userId || !bookingId) {
       return res.status(400).json({
         success: false,
-        message: 'User ID is required'
+        message: 'User ID and booking ID are required'
       });
     }
 
-    const referral = await Referral.trackFirstBooking(userId);
+    const referral = await (Referral as any).trackFirstBooking(userId, bookingId);
 
     if (!referral) {
       return res.status(404).json({
@@ -144,7 +154,7 @@ export const trackFirstBooking = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'First booking tracked successfully',
       data: {
@@ -157,7 +167,7 @@ export const trackFirstBooking = async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('Track first booking error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to track first booking',
       error: error.message
@@ -166,7 +176,7 @@ export const trackFirstBooking = async (req: Request, res: Response) => {
 };
 
 // Validate referral code
-export const validateReferralCode = async (req: Request, res: Response) => {
+export const validateReferralCode = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { referralCode } = req.params;
 
@@ -189,7 +199,7 @@ export const validateReferralCode = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         referralCode: referral.referralCode,
@@ -200,7 +210,7 @@ export const validateReferralCode = async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('Validate referral code error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to validate referral code',
       error: error.message

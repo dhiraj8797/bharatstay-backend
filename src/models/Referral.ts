@@ -113,7 +113,7 @@ ReferralSchema.statics.generateReferralCode = async function(userId: string): Pr
 
 // Static method to create referral for a user
 ReferralSchema.statics.createReferral = async function(userId: string) {
-  const referralCode = await this.generateReferralCode(userId);
+  const referralCode = await (this as any).generateReferralCode(userId);
   const referralLink = `https://bharat-stay.com/user-signup?ref=${referralCode}`;
   
   return await this.create({

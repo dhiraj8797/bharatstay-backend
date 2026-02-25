@@ -134,7 +134,7 @@ CustomerReferralSchema.statics.generateCustomerReferralCode = async function(use
 
 // Static method to create customer referral for a user
 CustomerReferralSchema.statics.createCustomerReferral = async function(userId: string) {
-  const referralCode = await this.generateCustomerReferralCode(userId);
+  const referralCode = await (this as any).generateCustomerReferralCode(userId);
   const referralLink = `https://bharat-stay.com/user-signup?ref=${referralCode}`;
   
   return await this.create({
@@ -299,7 +299,7 @@ CustomerReferralSchema.statics.getUserDiscountAvailability = async function(user
   });
   
   return {
-    availableDiscounts: referrals.filter(r => !r.referrerRewardUsed).length,
+    availableDiscounts: referrals.filter((r: any) => !r.referrerRewardUsed).length,
     discountPercentage: 15,
     totalReferralsCompleted: referrals.length
   };
