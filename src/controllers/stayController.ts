@@ -8,7 +8,7 @@ import Review from '../models/Review';
 import Payout from '../models/Payout';
 
 // Sync host stays to public Stay collection
-export const syncHostStaysToPublic = async (req: Request, res: Response): Promise<void> => {
+export const syncHostStaysToPublic = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { hostId } = req.params;
 
@@ -76,13 +76,13 @@ export const syncHostStaysToPublic = async (req: Request, res: Response): Promis
       }
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: `Synced ${hostStays.length} stays to public collection`
     });
   } catch (error: any) {
     console.error('Sync stays error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to sync stays',
       error: error.message
@@ -91,7 +91,7 @@ export const syncHostStaysToPublic = async (req: Request, res: Response): Promis
 };
 
 // Get all stays for user search
-export const getAllStays = async (req: Request, res: Response): Promise<void> => {
+export const getAllStays = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { city, state, stayType, minPrice, maxPrice, checkIn, checkOut, guests } = req.query;
 
@@ -117,14 +117,14 @@ export const getAllStays = async (req: Request, res: Response): Promise<void> =>
       .select('-__v')
       .sort({ averageRating: -1, createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       stays,
       count: stays.length
     });
   } catch (error: any) {
     console.error('Get all stays error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch stays',
       error: error.message
@@ -133,7 +133,7 @@ export const getAllStays = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Search stays with filters
-export const searchStays = async (req: Request, res: Response): Promise<void> => {
+export const searchStays = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { 
       query, 
@@ -267,7 +267,7 @@ export const searchStays = async (req: Request, res: Response): Promise<void> =>
       };
     });
 
-    res.json({
+    return res.json({
       success: true,
       stays: transformedStays,
       pagination: {
@@ -280,7 +280,7 @@ export const searchStays = async (req: Request, res: Response): Promise<void> =>
 
   } catch (error) {
     console.error('Error searching stays:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Error searching stays',
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -289,16 +289,15 @@ export const searchStays = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Get stay details from HostDashBoardStay for public viewing
-export const getStayDetailsFromHost = async (req: Request, res: Response): Promise<void> => {
+export const getStayDetailsFromHost = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { stayId } = req.params;
 
     if (!stayId) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: 'Stay ID is required'
       });
-      return;
     }
 
     // Find stay in HostDashBoardStay collection
@@ -306,20 +305,18 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
       .lean();
 
     if (!stay) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay not found'
       });
-      return;
     }
 
     // Check if stay is active
     if (stay.status !== 'active') {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay is not available for booking'
       });
-      return;
     }
 
     // Get host information
@@ -328,11 +325,10 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
       .lean();
 
     if (!host) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Host information not found'
       });
-      return;
     }
 
     // Get booking statistics
@@ -402,14 +398,14 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
       }
     };
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       stay: transformedStay
     });
 
   } catch (error: any) {
     console.error('Get stay details error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch stay details',
       error: error.message
@@ -418,7 +414,7 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
 };
 
 // Get stay by ID for details page
-export const getStayById = async (req: Request, res: Response): Promise<void> => {
+export const getStayById = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { stayId } = req.params;
 
@@ -427,11 +423,10 @@ export const getStayById = async (req: Request, res: Response): Promise<void> =>
       .select('-__v');
 
     if (!stay) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay not found'
       });
-      return;
     }
 
     // Increment view count
@@ -480,13 +475,13 @@ export const getStayById = async (req: Request, res: Response): Promise<void> =>
       }
     };
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       stay: transformedStay
     });
   } catch (error: any) {
     console.error('Get stay by ID error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch stay details',
       error: error.message
@@ -673,7 +668,7 @@ export const getHostStays = async (req: Request, res: Response): Promise<void> =
 };
 
 // Update stay
-export const updateStay = async (req: Request, res: Response): Promise<void> => {
+export const updateStay = async (req: Request, res: Response): Promise<Response> => {
   try {
     const stayId = req.params.stayId;
     const updateData = { ...req.body };
@@ -699,21 +694,20 @@ export const updateStay = async (req: Request, res: Response): Promise<void> => 
     });
 
     if (!stay) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay not found',
       });
-      return;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Stay updated successfully',
       data: stay,
     });
   } catch (error: any) {
     console.error('Update stay error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to update stay',
       error: error.message,
@@ -840,18 +834,17 @@ export const getStayForEdit = async (req: Request, res: Response): Promise<void>
 };
 
 // Toggle stay status (Go Live / Go Offline)
-export const toggleStayStatus = async (req: Request, res: Response): Promise<void> => {
+export const toggleStayStatus = async (req: Request, res: Response): Promise<Response> => {
   try {
     const stayId = req.params.stayId;
 
     const stay = await HostDashBoardStay.findById(stayId);
 
     if (!stay) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay not found',
       });
-      return;
     }
 
     // Toggle between active and inactive
@@ -863,7 +856,7 @@ export const toggleStayStatus = async (req: Request, res: Response): Promise<voi
       ? 'Property is now LIVE and available for booking!' 
       : 'Property is now OFFLINE and not available for booking';
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: statusMessage,
       data: {
@@ -876,7 +869,7 @@ export const toggleStayStatus = async (req: Request, res: Response): Promise<voi
     });
   } catch (error: any) {
     console.error('Toggle stay status error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to toggle stay status',
       error: error.message,
