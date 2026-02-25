@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 
 import connectDB from "./config/database";
 
@@ -54,6 +55,15 @@ connectDB().catch((err) => {
   // Don't exit process, continue running but with limited functionality
 });
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static("uploads"));
+
+// In development, serve frontend static files if they exist
+if (process.env.NODE_ENV !== 'production') {
+  const frontendDistPath = path.join(__dirname, '../../app/dist');
+  app.use(express.static(frontendDistPath));
+}
+
 // Routes
 app.get("/", (req: Request, res: Response) => {
   res.json({ ok: true, message: "BharatStay API running" });
@@ -75,8 +85,6 @@ app.use("/api/upi", upiRoutes);
 app.use("/api/customer-referral", customerReferralRoutes);
 app.use("/api", contactRoutes);
 
-app.use("/uploads", express.static("uploads"));
-
 // Health Check
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({
@@ -86,11 +94,11 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
-// 404 Handler
-app.use((req: Request, res: Response) => {
+// 404 Handler - Only for API routes
+app.use("/api/*", (req: Request, res: Response) => {
   res.status(404).json({
     success: false,
-    message: "Route not found",
+    message: "API route not found",
     path: req.path,
   });
 });
@@ -109,4 +117,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📝 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌐 Frontend should be available at http://localhost:8080`);
 });
