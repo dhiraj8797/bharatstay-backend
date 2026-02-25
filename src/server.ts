@@ -18,6 +18,7 @@ import hostDashboardStayRoutes from "./routes/hostDashboardStayRoutes";
 import contactRoutes from "./routes/contact";
 import referralRoutes from "./routes/referralRoutes";
 import upiRoutes from "./routes/upiRoutes";
+import customerReferralRoutes from "./routes/customerReferralRoutes";
 
 dotenv.config();
 
@@ -71,6 +72,7 @@ app.use("/api/host-dashboard-stay", hostDashboardStayRoutes);
 app.use("/api/host-bank-details", hostBankDetailsRoutes);
 app.use("/api/referral", referralRoutes);
 app.use("/api/upi", upiRoutes);
+app.use("/api/customer-referral", customerReferralRoutes);
 app.use("/api", contactRoutes);
 
 app.use("/uploads", express.static("uploads"));
