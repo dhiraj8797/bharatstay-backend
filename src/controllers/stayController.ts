@@ -341,11 +341,12 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
     // Transform photos into categories
     const photos = stay.photos || [];
     const categorizedPhotos = {
-      bedroom: photos.slice(0, Math.min(5, photos.length)),
-      kitchen: photos.slice(5, Math.min(10, photos.length)),
-      hall: photos.slice(10, Math.min(15, photos.length)),
-      bathroom: photos.slice(15, Math.min(20, photos.length)),
-      extra: photos.slice(20)
+      bedroom: photos.slice(0, Math.min(10, photos.length)),
+      kitchen: photos.slice(10, Math.min(20, photos.length)),
+      hall: photos.slice(20, Math.min(30, photos.length)),
+      bathroom: photos.slice(30, Math.min(40, photos.length)),
+      frontHouse: photos.slice(40, Math.min(50, photos.length)),
+      extra: photos.slice(50, Math.min(60, photos.length))
     };
 
     // Transform the data to match the frontend interface
