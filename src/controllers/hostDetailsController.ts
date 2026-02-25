@@ -24,13 +24,13 @@ export const getHostDetails = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       hostDetails
     });
   } catch (error) {
     console.error('Error fetching host details:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -74,14 +74,14 @@ export const saveHostDetails = async (req: Request, res: Response) => {
       await savedDetails.save();
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Host details saved successfully',
       hostDetails: savedDetails
     });
   } catch (error) {
     console.error('Error saving host details:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -110,13 +110,13 @@ export const deleteHostDetails = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Host details deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting host details:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
@@ -163,13 +163,13 @@ export const getHostDetailsForGuest = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       hostDetails
     });
   } catch (error) {
     console.error('Error fetching host details for guest:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
