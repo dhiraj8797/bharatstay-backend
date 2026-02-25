@@ -490,7 +490,7 @@ export const getStayById = async (req: Request, res: Response): Promise<Response
 };
 
 // Get dashboard statistics
-export const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
+export const getDashboardStats = async (req: Request, res: Response): Promise<Response> => {
   try {
     const hostId = req.params.hostId;
 
@@ -577,24 +577,27 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       { $sort: { '_id.year': 1, '_id.month': 1 } },
     ]);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
-        totalEarnings,
-        platformCommission,
-        availableBalance,
-        processingAmount,
+        totalEarnings: netEarnings,
         totalBookings: bookings.length,
-        upcomingBookings,
+        activeStays: stays.length,
+        totalStays: stays.length,
         averageRating: Math.round(averageRating * 10) / 10,
+        pendingBookings: 0,
+        upcomingBookings,
+        processingAmount,
+        withdrawnAmount,
+        availableBalance,
+        platformCommission,
         activePromotions,
         monthlyEarnings,
-        totalStays: stays.length,
       },
     });
   } catch (error: any) {
     console.error('Dashboard stats error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch dashboard statistics',
       error: error.message,
@@ -603,15 +606,14 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
 };
 
 // Create new stay
-export const createStay = async (req: Request, res: Response): Promise<void> => {
+export const createStay = async (req: Request, res: Response): Promise<Response> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         errors: errors.array(),
       });
-      return;
     }
 
     const files = req.files as Express.Multer.File[];
@@ -632,14 +634,14 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
     const stay = new Stay(stayData);
     await stay.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Stay created successfully',
       data: stay,
     });
   } catch (error: any) {
     console.error('Create stay error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to create stay',
       error: error.message,
@@ -648,18 +650,18 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Get all stays for a host
-export const getHostStays = async (req: Request, res: Response): Promise<void> => {
+export const getHostStays = async (req: Request, res: Response): Promise<Response> => {
   try {
     const hostId = req.params.hostId;
-    const stays = await Stay.find({ hostId }).sort({ createdAt: -1 });
+    const stays = await HostDashBoardStay.find({ hostId }).sort({ createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: stays,
     });
   } catch (error: any) {
     console.error('Get host stays error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch stays',
       error: error.message,
@@ -716,7 +718,7 @@ export const updateStay = async (req: Request, res: Response): Promise<Response>
 };
 
 // Delete stay
-export const deleteStay = async (req: Request, res: Response): Promise<void> => {
+export const deleteStay = async (req: Request, res: Response): Promise<Response> => {
   try {
     const stayId = req.params.stayId;
 
@@ -727,30 +729,28 @@ export const deleteStay = async (req: Request, res: Response): Promise<void> => 
     });
 
     if (upcomingBookings > 0) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: 'Cannot delete stay with active or upcoming bookings',
       });
-      return;
     }
 
     const stay = await Stay.findByIdAndDelete(stayId);
 
     if (!stay) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay not found',
       });
-      return;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Stay deleted successfully',
     });
   } catch (error: any) {
     console.error('Delete stay error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to delete stay',
       error: error.message,
@@ -759,33 +759,32 @@ export const deleteStay = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Update stay pricing
-export const updateStayPricing = async (req: Request, res: Response): Promise<void> => {
+export const updateStayPricing = async (req: Request, res: Response): Promise<Response> => {
   try {
     const stayId = req.params.stayId;
     const { pricing } = req.body;
 
-    const stay = await Stay.findByIdAndUpdate(
+    const stay = await HostDashBoardStay.findByIdAndUpdate(
       stayId,
       { pricing },
       { new: true, runValidators: true }
     );
 
     if (!stay) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay not found',
       });
-      return;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Pricing updated successfully',
       data: stay,
     });
   } catch (error: any) {
     console.error('Update pricing error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to update pricing',
       error: error.message,
@@ -794,38 +793,35 @@ export const updateStayPricing = async (req: Request, res: Response): Promise<vo
 };
 
 // Get stay for editing (returns all fields including sensitive ones for host)
-export const getStayForEdit = async (req: Request, res: Response): Promise<void> => {
+export const getStayForEdit = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { stayId } = req.params;
 
     if (!stayId) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: 'Stay ID is required'
       });
-      return;
     }
 
     // Find stay in HostDashBoardStay collection
     const stay = await HostDashBoardStay.findById(stayId);
 
     if (!stay) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Stay not found'
       });
-      return;
     }
 
     // Return complete stay data for editing
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       stay: stay
     });
-
   } catch (error: any) {
     console.error('Get stay for edit error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to fetch stay for editing',
       error: error.message
