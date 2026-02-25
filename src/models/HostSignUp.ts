@@ -24,6 +24,7 @@ export interface IHostSignUp extends Document {
   fullName: string;
   email: string;
   phoneNumber: string;
+  referralCode?: string;
   password: string;
   firebaseUid?: string;
   dateOfBirth: Date;
@@ -69,6 +70,12 @@ const hostSignUpSchema = new Schema<IHostSignUp>({
     required: [true, "Phone number is required"],
     unique: true,
     match: [/^\d{10}$/, "Phone number must be 10 digits"],
+  },
+  referralCode: {
+    type: String,
+    default: undefined,
+    uppercase: true,
+    trim: true,
   },
   password: {
     type: String,

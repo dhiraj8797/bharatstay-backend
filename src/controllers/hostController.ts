@@ -286,7 +286,7 @@ export const registerHostWithPassword = async (req: Request, res: Response): Pro
 
 
 
-    const { fullName, email, phoneNumber, dateOfBirth, state, city, pincode, password, firebaseUid } = req.body;
+    const { fullName, email, phoneNumber, referralCode, dateOfBirth, state, city, pincode, password, firebaseUid } = req.body;
 
 
 
@@ -355,6 +355,35 @@ export const registerHostWithPassword = async (req: Request, res: Response): Pro
 
 
     await host.save();
+
+
+
+    // Track referral signup if referral code provided
+    if (referralCode) {
+      try {
+        const response = await fetch(`${process.env.API_BASE_URL || 'http://localhost:3001'}/api/referral/track-signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            referralCode,
+            userId: host._id.toString(),
+            email,
+            phoneNumber,
+            ipAddress: req.ip,
+            userAgent: req.get('User-Agent')
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Referral signup tracked successfully');
+        } else {
+          console.log('Failed to track referral signup:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error tracking referral signup:', error);
+        // Don't fail registration if referral tracking fails
+      }
+    }
 
 
 
