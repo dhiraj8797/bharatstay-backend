@@ -6,22 +6,23 @@ import { AdminSettings } from '../models/Settings';
 export const getAdminSettings = async (req: Request, res: Response) => {
   try {
     console.log('getAdminSettings called');
-    console.log('AdminSettings model:', AdminSettings);
     
-    let settings = await AdminSettings.findOne();
-    console.log('Settings found:', settings);
-    
-    if (!settings) {
-      console.log('Creating default settings');
-      settings = new AdminSettings();
-      await settings.save();
-      console.log('Default settings created');
-    }
+    // Return mock data for now to test the endpoint
+    const mockSettings = {
+      commissionRate: 10,
+      commissionType: 'percentage',
+      gstEnabled: false,
+      gstRate: 18,
+      platformFeeEnabled: false,
+      platformFeeRate: 2,
+      defaultCurrency: 'INR',
+      defaultLanguage: 'en'
+    };
 
     return res.json({
       success: true,
-      message: 'Admin settings retrieved successfully',
-      settings
+      message: 'Admin settings retrieved successfully (mock data)',
+      settings: mockSettings
     });
   } catch (error) {
     console.error('Error in getAdminSettings:', error);
