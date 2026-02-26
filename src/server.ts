@@ -118,6 +118,8 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
+// Admin Console Routes - All 10 sections complete
+
 // 404 Handler - Only for API routes
 app.use("/api/*", (req: Request, res: Response) => {
   res.status(404).json({
