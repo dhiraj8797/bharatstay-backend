@@ -5,8 +5,13 @@ import HostDashBoardStay from '../models/HostDashBoardStay';
 // Create a new stay
 export const createStay = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('=== CREATE STAY REQUEST ===');
+    console.log('Request body keys:', Object.keys(req.body));
+    console.log('Request files:', req.files);
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       res.status(400).json({ success: false, errors: errors.array() });
       return;
     }
@@ -101,6 +106,7 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
       message: 'Stay created successfully',
       stay: newStay,
     });
+    return;
   } catch (error) {
     console.error('Error creating stay:', error);
     res.status(500).json({
@@ -128,6 +134,7 @@ export const getHostStays = async (req: Request, res: Response): Promise<void> =
       success: true,
       stays,
     });
+    return;
   } catch (error) {
     console.error('Error fetching stays:', error);
     res.status(500).json({
@@ -135,6 +142,7 @@ export const getHostStays = async (req: Request, res: Response): Promise<void> =
       message: 'Error fetching stays',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 };
 
@@ -157,6 +165,7 @@ export const getStayById = async (req: Request, res: Response): Promise<void> =>
       success: true,
       stay,
     });
+    return;
   } catch (error) {
     console.error('Error fetching stay:', error);
     res.status(500).json({
@@ -164,6 +173,7 @@ export const getStayById = async (req: Request, res: Response): Promise<void> =>
       message: 'Error fetching stay',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 };
 
@@ -198,6 +208,7 @@ export const updateStay = async (req: Request, res: Response): Promise<void> => 
       message: 'Stay updated successfully',
       stay,
     });
+    return;
   } catch (error) {
     console.error('Error updating stay:', error);
     res.status(500).json({
@@ -205,6 +216,7 @@ export const updateStay = async (req: Request, res: Response): Promise<void> => 
       message: 'Error updating stay',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 };
 
@@ -227,6 +239,7 @@ export const deleteStay = async (req: Request, res: Response): Promise<void> => 
       success: true,
       message: 'Stay deleted successfully',
     });
+    return;
   } catch (error) {
     console.error('Error deleting stay:', error);
     res.status(500).json({
@@ -234,6 +247,7 @@ export const deleteStay = async (req: Request, res: Response): Promise<void> => 
       message: 'Error deleting stay',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 };
 
@@ -271,6 +285,7 @@ export const updateStayStatus = async (req: Request, res: Response): Promise<voi
       message: 'Stay status updated successfully',
       stay,
     });
+    return;
   } catch (error) {
     console.error('Error updating stay status:', error);
     res.status(500).json({
@@ -278,5 +293,6 @@ export const updateStayStatus = async (req: Request, res: Response): Promise<voi
       message: 'Error updating stay status',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 };
