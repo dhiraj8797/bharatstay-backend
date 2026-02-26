@@ -255,8 +255,9 @@ export const getAllReferrals = async (req: Request, res: Response) => {
     console.error('Get all referrals error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get referrals',
-      error: error.message
+      message: 'Failed to fetch referrals',
+      error: error.message,
     });
+    return;
   }
 };

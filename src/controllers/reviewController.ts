@@ -21,6 +21,7 @@ export const getHostReviews = async (req: Request, res: Response): Promise<void>
       message: 'Failed to fetch reviews',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -67,6 +68,7 @@ export const replyToReview = async (req: Request, res: Response): Promise<void> 
       message: 'Failed to post reply',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -113,6 +115,7 @@ export const reportReview = async (req: Request, res: Response): Promise<void> =
       message: 'Failed to report review',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -180,6 +183,7 @@ export const getReviewStats = async (req: Request, res: Response): Promise<void>
       message: 'Failed to fetch review statistics',
       error: error.message,
     });
+    return;
   }
 };
 

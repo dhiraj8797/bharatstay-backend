@@ -7,8 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "lint": "eslint src/**/*.ts",
-    "seed:admin": "ts-node scripts/seedAdminConsole.ts"
+    "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.10",

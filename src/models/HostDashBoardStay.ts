@@ -32,22 +32,7 @@ export interface IHostDashBoardStay extends Document {
     securityDeposit: number;
     smartPricing: boolean;
   };
-  status: 'active' | 'inactive' | 'pending' | 'suspended';
-  // Admin management fields
-  isFeatured?: boolean;
-  featuredAt?: Date;
-  featuredBy?: string;
-  featuredReason?: string;
-  unfeaturedAt?: Date;
-  unfeaturedBy?: string;
-  approvedAt?: Date;
-  approvedBy?: string;
-  rejectedAt?: Date;
-  rejectedBy?: string;
-  rejectionReason?: string;
-  disabledAt?: Date;
-  disabledBy?: string;
-  disableReason?: string;
+  status: 'active' | 'inactive' | 'pending';
   createdAt: Date;
   updatedAt: Date;
 }

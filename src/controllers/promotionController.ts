@@ -70,6 +70,7 @@ export const getHostPromotions = async (req: Request, res: Response): Promise<vo
       message: 'Failed to fetch promotions',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -111,6 +112,7 @@ export const getPromotionByCode = async (req: Request, res: Response): Promise<v
       message: 'Failed to fetch promotion',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -146,6 +148,7 @@ export const updatePromotion = async (req: Request, res: Response): Promise<void
       message: 'Failed to update promotion',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -179,6 +182,7 @@ export const togglePromotionStatus = async (req: Request, res: Response): Promis
       message: 'Failed to toggle promotion status',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -208,6 +212,7 @@ export const deletePromotion = async (req: Request, res: Response): Promise<void
       message: 'Failed to delete promotion',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -280,6 +285,7 @@ export const applyPromotion = async (req: Request, res: Response): Promise<void>
       message: 'Failed to apply promotion',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -323,6 +329,7 @@ export const getPromotionStats = async (req: Request, res: Response): Promise<vo
       message: 'Failed to fetch promotion statistics',
       error: error.message,
     });
+    return;
   }
 };
 

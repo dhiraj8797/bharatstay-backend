@@ -155,8 +155,9 @@ export const getSupportedProviders = async (req: Request, res: Response) => {
     console.error('Get providers error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get supported providers',
-      error: error.message
+      message: 'Failed to fetch UPI providers',
+      error: error.message,
     });
+    return;
   }
 };

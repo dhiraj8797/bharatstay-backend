@@ -73,6 +73,7 @@ export const registerUserWithPassword = async (req: Request, res: Response): Pro
       message: 'Error registering user',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
+    return;
   }
 };
 
@@ -144,6 +145,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       message: 'Error logging in',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
+    return;
   }
 };
 
@@ -205,6 +207,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
       message: 'Error registering user',
       error: error.message
     });
+    return;
   }
 };
 
@@ -279,6 +282,7 @@ export const verifyUserOTP = async (req: Request, res: Response): Promise<void> 
       message: 'Error verifying OTP',
       error: error.message
     });
+    return;
   }
 };
 
@@ -333,6 +337,7 @@ export const completeUserRegistration = async (req: Request, res: Response): Pro
       message: 'Error completing registration',
       error: error.message
     });
+    return;
   }
 };
 
@@ -387,6 +392,7 @@ export const resendUserOTP = async (req: Request, res: Response): Promise<void> 
       message: 'Error resending OTP',
       error: error.message
     });
+    return;
   }
 };
 
@@ -424,6 +430,7 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
       message: 'Error fetching user details',
       error: error.message
     });
+    return;
   }
 };
 
@@ -504,6 +511,7 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
       message: 'Error updating user profile',
       error: error.message
     });
+    return;
   }
 };
 
@@ -536,5 +544,6 @@ export const deleteUserAccount = async (req: Request, res: Response): Promise<vo
       message: 'Error deleting user account',
       error: error.message
     });
+    return;
   }
 };

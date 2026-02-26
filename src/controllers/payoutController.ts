@@ -29,7 +29,7 @@ export const requestPayout = async (req: Request, res: Response): Promise<void> 
     });
 
     const withdrawnAmount = completedPayouts.reduce(
-      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
+      (sum, payout) => sum + payout.netAmount,
       0
     );
 
@@ -67,6 +67,7 @@ export const requestPayout = async (req: Request, res: Response): Promise<void> 
       message: 'Failed to request payout',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -94,6 +95,7 @@ export const getPayoutHistory = async (req: Request, res: Response): Promise<voi
       message: 'Failed to fetch payout history',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -123,6 +125,7 @@ export const getPayoutDetails = async (req: Request, res: Response): Promise<voi
       message: 'Failed to fetch payout details',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -156,12 +159,12 @@ export const getPayoutStats = async (req: Request, res: Response): Promise<void>
     });
 
     const withdrawnAmount = completedPayouts.reduce(
-      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
+      (sum, payout) => sum + payout.netAmount,
       0
     );
 
     const processingAmount = processingPayouts.reduce(
-      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
+      (sum, payout) => sum + payout.netAmount,
       0
     );
 
@@ -185,6 +188,7 @@ export const getPayoutStats = async (req: Request, res: Response): Promise<void>
       message: 'Failed to fetch payout statistics',
       error: error.message,
     });
+    return;
   }
 };
 
@@ -225,5 +229,6 @@ export const updateBankDetails = async (req: Request, res: Response): Promise<vo
       message: 'Failed to update bank details',
       error: error.message,
     });
+    return;
   }
 };
