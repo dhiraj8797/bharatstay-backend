@@ -21,17 +21,17 @@ import contactRoutes from "./routes/contact";
 import referralRoutes from "./routes/referralRoutes";
 import upiRoutes from "./routes/upiRoutes";
 import customerReferralRoutes from "./routes/customerReferralRoutes";
-import adminConsoleRoutes from "./routes/adminConsoleRoutes";
-import adminDashboardRoutes from "./routes/adminDashboardRoutes";
-import adminHostManagementRoutes from "./routes/adminHostManagementRoutes";
-import adminPropertyManagementRoutes from "./routes/adminPropertyManagementRoutes";
-import adminBookingManagementRoutes from "./routes/adminBookingManagementRoutes";
-import adminCommissionRoutes from "./routes/adminCommissionRoutes";
-import adminPayoutRoutes from "./routes/adminPayoutRoutes";
-import adminUserManagementRoutes from "./routes/adminUserManagementRoutes";
-import adminDisputeRoutes from "./routes/adminDisputeRoutes";
-import adminContentRoutes from "./routes/adminContentRoutes";
-import adminSettingsRoutes from "./routes/adminSettingsRoutes";
+// import adminConsoleRoutes from "./routes/adminConsoleRoutes";
+// import adminDashboardRoutes from "./routes/adminDashboardRoutes";
+// import adminHostManagementRoutes from "./routes/adminHostManagementRoutes";
+// import adminPropertyManagementRoutes from "./routes/adminPropertyManagementRoutes";
+// import adminBookingManagementRoutes from "./routes/adminBookingManagementRoutes";
+// import adminCommissionRoutes from "./routes/adminCommissionRoutes";
+// import adminPayoutRoutes from "./routes/adminPayoutRoutes";
+// import adminUserManagementRoutes from "./routes/adminUserManagementRoutes";
+// import adminDisputeRoutes from "./routes/adminDisputeRoutes";
+// import adminContentRoutes from "./routes/adminContentRoutes";
+// import adminSettingsRoutes from "./routes/adminSettingsRoutes";
 
 dotenv.config();
 
