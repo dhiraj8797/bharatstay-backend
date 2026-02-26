@@ -129,15 +129,6 @@ app.get("/api/test-admin", (req: Request, res: Response) => {
   });
 });
 
-// 404 Handler - Only for API routes
-app.use("/api/*", (req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: "API route not found",
-    path: req.path,
-  });
-});
-
 // Error Handler
 app.use((err: any, req: Request, res: Response) => {
   console.error("Error:", err);
@@ -147,10 +138,11 @@ app.use((err: any, req: Request, res: Response) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-
+// Start Server
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📝 Health check: http://localhost:${PORT}/health`);
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Health Check: http://localhost:${PORT}/health`);
   console.log(`🌐 Frontend should be available at http://localhost:8080`);
 });
