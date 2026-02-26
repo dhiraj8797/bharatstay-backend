@@ -5,23 +5,29 @@ import { AdminSettings } from '../models/Settings';
 // Get all admin settings
 export const getAdminSettings = async (req: Request, res: Response) => {
   try {
+    console.log('getAdminSettings called');
+    console.log('AdminSettings model:', AdminSettings);
+    
     let settings = await AdminSettings.findOne();
+    console.log('Settings found:', settings);
     
     if (!settings) {
-      // Create default settings if none exist
+      console.log('Creating default settings');
       settings = new AdminSettings();
       await settings.save();
+      console.log('Default settings created');
     }
 
     return res.json({
       success: true,
+      message: 'Admin settings retrieved successfully',
       settings
     });
   } catch (error) {
-    console.error('Error fetching admin settings:', error);
+    console.error('Error in getAdminSettings:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error fetching admin settings',
+      message: 'Error retrieving admin settings',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
