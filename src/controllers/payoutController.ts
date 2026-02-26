@@ -29,7 +29,7 @@ export const requestPayout = async (req: Request, res: Response): Promise<void> 
     });
 
     const withdrawnAmount = completedPayouts.reduce(
-      (sum, payout) => sum + payout.netAmount,
+      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
       0
     );
 
@@ -156,12 +156,12 @@ export const getPayoutStats = async (req: Request, res: Response): Promise<void>
     });
 
     const withdrawnAmount = completedPayouts.reduce(
-      (sum, payout) => sum + payout.netAmount,
+      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
       0
     );
 
     const processingAmount = processingPayouts.reduce(
-      (sum, payout) => sum + payout.netAmount,
+      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
       0
     );
 

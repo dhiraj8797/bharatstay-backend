@@ -26,6 +26,25 @@ export interface IBooking extends Document {
     email: string;
     phone: string;
   };
+  // Admin management fields
+  adminCancelled?: boolean;
+  adminCancelledBy?: string;
+  adminCancelledAt?: Date;
+  adminCancellationReason?: string;
+  disputeStatus?: 'none' | 'pending' | 'resolved' | 'rejected';
+  disputeReason?: string;
+  disputeRaisedAt?: Date;
+  disputeResolvedAt?: Date;
+  disputeResolvedBy?: string;
+  disputeResolution?: string;
+  refundStatus?: 'none' | 'pending' | 'approved' | 'rejected' | 'processed';
+  refundAmount?: number;
+  refundReason?: string;
+  refundProcessedAt?: Date;
+  refundProcessedBy?: string;
+  commissionAmount?: number;
+  gstAmount?: number;
+  tcsAmount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -135,6 +154,74 @@ const BookingSchema: Schema = new Schema(
         type: String,
         required: true,
       },
+    },
+    // Admin management fields
+    adminCancelled: {
+      type: Boolean,
+      default: false,
+    },
+    adminCancelledBy: {
+      type: String,
+    },
+    adminCancelledAt: {
+      type: Date,
+    },
+    adminCancellationReason: {
+      type: String,
+      trim: true,
+    },
+    disputeStatus: {
+      type: String,
+      enum: ['none', 'pending', 'resolved', 'rejected'],
+      default: 'none',
+    },
+    disputeReason: {
+      type: String,
+      trim: true,
+    },
+    disputeRaisedAt: {
+      type: Date,
+    },
+    disputeResolvedAt: {
+      type: Date,
+    },
+    disputeResolvedBy: {
+      type: String,
+    },
+    disputeResolution: {
+      type: String,
+      trim: true,
+    },
+    refundStatus: {
+      type: String,
+      enum: ['none', 'pending', 'approved', 'rejected', 'processed'],
+      default: 'none',
+    },
+    refundAmount: {
+      type: Number,
+      min: 0,
+    },
+    refundReason: {
+      type: String,
+      trim: true,
+    },
+    refundProcessedAt: {
+      type: Date,
+    },
+    refundProcessedBy: {
+      type: String,
+    },
+    commissionAmount: {
+      type: Number,
+      min: 0,
+    },
+    gstAmount: {
+      type: Number,
+      min: 0,
+    },
+    tcsAmount: {
+      type: Number,
+      min: 0,
     },
   },
   {

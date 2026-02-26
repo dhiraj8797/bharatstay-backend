@@ -2,22 +2,51 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPayout extends Document {
   hostId: mongoose.Types.ObjectId;
-  amount: number;
-  platformCommission: number;
-  netAmount: number;
-  payoutMethod: 'bank' | 'upi';
+  bookingId: mongoose.Types.ObjectId;
+  bookingReference: string;
+  period: {
+    startDate: Date;
+    endDate: Date;
+  };
+  amounts: {
+    totalBookingAmount: number;
+    commissionAmount: number;
+    gstAmount: number;
+    tcsAmount: number;
+    platformFeeAmount: number;
+    penalties: number;
+    totalDeductions: number;
+    netPayout: number;
+  };
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  payoutMethod: 'bank_transfer' | 'upi' | 'wallet';
   bankDetails?: {
-    bankName: string;
     accountNumber: string;
-    ifscCode: string;
+    ifsc: string;
+    accountHolderName: string;
+    bankName: string;
+  };
+  upiDetails?: {
+    upiId: string;
     accountHolderName: string;
   };
-  upiId?: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
   transactionId?: string;
-  failureReason?: string;
-  requestedAt: Date;
   processedAt?: Date;
+  processedBy?: string;
+  failureReason?: string;
+  retryCount: number;
+  lastRetryAt?: Date;
+  notes?: string;
+  // Legacy fields for backward compatibility
+  amount?: number;
+  platformCommission?: number;
+  netAmount?: number;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
+  upiId?: string;
+  requestedAt?: Date;
   completedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -29,71 +58,187 @@ const PayoutSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'HostSignUp',
       required: true,
-      index: true,
+      index: true
     },
-    amount: {
-      type: Number,
+    bookingId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Booking',
       required: true,
-      min: 0,
+      index: true
     },
-    platformCommission: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    netAmount: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    payoutMethod: {
+    bookingReference: {
       type: String,
-      enum: ['bank', 'upi'],
       required: true,
+      trim: true
     },
-    bankDetails: {
-      bankName: String,
-      accountNumber: String,
-      ifscCode: String,
-      accountHolderName: String,
+    period: {
+      startDate: {
+        type: Date,
+        required: true
+      },
+      endDate: {
+        type: Date,
+        required: true
+      }
     },
-    upiId: {
-      type: String,
-      trim: true,
+    amounts: {
+      totalBookingAmount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      commissionAmount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      gstAmount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      tcsAmount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      platformFeeAmount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      penalties: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      totalDeductions: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      netPayout: {
+        type: Number,
+        required: true,
+        min: 0
+      }
     },
     status: {
       type: String,
-      enum: ['pending', 'processing', 'completed', 'failed'],
+      enum: ['pending', 'processing', 'completed', 'failed', 'cancelled'],
       default: 'pending',
-      index: true,
+      index: true
+    },
+    payoutMethod: {
+      type: String,
+      enum: ['bank_transfer', 'upi', 'wallet'],
+      required: true
+    },
+    bankDetails: {
+      accountNumber: {
+        type: String,
+        trim: true
+      },
+      ifsc: {
+        type: String,
+        trim: true
+      },
+      accountHolderName: {
+        type: String,
+        trim: true
+      },
+      bankName: {
+        type: String,
+        trim: true
+      }
+    },
+    upiDetails: {
+      upiId: {
+        type: String,
+        trim: true
+      },
+      accountHolderName: {
+        type: String,
+        trim: true
+      }
     },
     transactionId: {
       type: String,
       trim: true,
       unique: true,
-      sparse: true,
+      sparse: true
+    },
+    processedAt: {
+      type: Date
+    },
+    processedBy: {
+      type: String
     },
     failureReason: {
       type: String,
-      trim: true,
+      trim: true
+    },
+    retryCount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    lastRetryAt: {
+      type: Date
+    },
+    notes: {
+      type: String,
+      trim: true
+    },
+    // Legacy fields for backward compatibility
+    amount: {
+      type: Number,
+      min: 0
+    },
+    platformCommission: {
+      type: Number,
+      min: 0
+    },
+    netAmount: {
+      type: Number,
+      min: 0
+    },
+    bankName: {
+      type: String,
+      trim: true
+    },
+    accountNumber: {
+      type: String,
+      trim: true
+    },
+    ifscCode: {
+      type: String,
+      trim: true
+    },
+    accountHolderName: {
+      type: String,
+      trim: true
+    },
+    upiId: {
+      type: String,
+      trim: true
     },
     requestedAt: {
-      type: Date,
-      default: Date.now,
-    },
-    processedAt: {
-      type: Date,
+      type: Date
     },
     completedAt: {
-      type: Date,
-    },
+      type: Date
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-// Indexes
+// Indexes for better query performance
+PayoutSchema.index({ hostId: 1, status: 1 });
+PayoutSchema.index({ status: 1, createdAt: -1 });
+PayoutSchema.index({ period: 1 });
 PayoutSchema.index({ requestedAt: -1 });
 PayoutSchema.index({ status: 1, requestedAt: -1 });
 

@@ -526,7 +526,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
       status: 'processing',
     });
     const processingAmount = processingPayouts.reduce(
-      (sum, payout) => sum + payout.netAmount,
+      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
       0
     );
 
@@ -536,7 +536,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
       status: 'completed',
     });
     const withdrawnAmount = completedPayouts.reduce(
-      (sum, payout) => sum + payout.netAmount,
+      (sum, payout) => sum + (payout.amounts?.netPayout || payout.netAmount || 0),
       0
     );
 
