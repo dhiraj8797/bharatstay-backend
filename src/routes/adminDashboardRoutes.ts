@@ -1,23 +1,33 @@
 import { Router } from 'express';
-import { Request, Response } from 'express';
+import {
+  getDashboardStats,
+  getBookingsPerDayChart,
+  getRevenueChart,
+  getCityWiseBookings,
+  getPropertyTypeDistribution,
+  getRecentActivities
+} from '../controllers/adminDashboardController';
 
 const router = Router();
 
-console.log('Admin dashboard routes loaded');
+// Dashboard endpoints
 
-// Test endpoint
-router.get('/stats', (req: Request, res: Response) => {
-  console.log('Admin dashboard stats endpoint called');
-  res.json({
-    success: true,
-    message: 'Admin dashboard stats endpoint working',
-    data: {
-      totalUsers: 100,
-      totalHosts: 50,
-      activeProperties: 25,
-      totalBookingsToday: 10
-    }
-  });
-});
+// GET /api/admin-dashboard/stats - Get dashboard top stats
+router.get('/stats', getDashboardStats);
+
+// GET /api/admin-dashboard/charts/bookings-per-day - Get bookings per day chart
+router.get('/charts/bookings-per-day', getBookingsPerDayChart);
+
+// GET /api/admin-dashboard/charts/revenue - Get revenue chart
+router.get('/charts/revenue', getRevenueChart);
+
+// GET /api/admin-dashboard/charts/city-wise-bookings - Get city wise bookings
+router.get('/charts/city-wise-bookings', getCityWiseBookings);
+
+// GET /api/admin-dashboard/charts/property-types - Get property type distribution
+router.get('/charts/property-types', getPropertyTypeDistribution);
+
+// GET /api/admin-dashboard/recent-activities - Get recent activities
+router.get('/recent-activities', getRecentActivities);
 
 export default router;
