@@ -517,7 +517,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
       0
     );
 
-    const platformCommission = totalEarnings * 0.06; // 6% commission
+    const platformCommission = totalEarnings * 0.1; // 10% commission
     const netEarnings = totalEarnings - platformCommission;
 
     // Get processing amount (from processing payouts)

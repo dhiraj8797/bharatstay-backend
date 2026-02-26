@@ -30,19 +30,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  role: {
-    type: String,
-    enum: ['user', 'host', 'admin'],
-    default: 'user'
-  },
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  isSuspended: {
-    type: Boolean,
-    default: false
-  },
   termsAccepted: {
     type: Boolean,
     default: false
