@@ -1,33 +1,20 @@
 import { Router } from 'express';
-import {
-  getDashboardStats,
-  getBookingsPerDayChart,
-  getRevenueChart,
-  getCityWiseBookings,
-  getPropertyTypeDistribution,
-  getRecentActivities
-} from '../controllers/adminDashboardController';
+import { Request, Response } from 'express';
 
 const router = Router();
 
-// Dashboard endpoints
-
-// GET /api/admin-dashboard/stats - Get dashboard top stats
-router.get('/stats', getDashboardStats);
-
-// GET /api/admin-dashboard/charts/bookings-per-day - Get bookings per day chart
-router.get('/charts/bookings-per-day', getBookingsPerDayChart);
-
-// GET /api/admin-dashboard/charts/revenue - Get revenue chart
-router.get('/charts/revenue', getRevenueChart);
-
-// GET /api/admin-dashboard/charts/city-wise-bookings - Get city-wise bookings
-router.get('/charts/city-wise-bookings', getCityWiseBookings);
-
-// GET /api/admin-dashboard/charts/property-types - Get property type distribution
-router.get('/charts/property-types', getPropertyTypeDistribution);
-
-// GET /api/admin-dashboard/recent-activities - Get recent activities
-router.get('/recent-activities', getRecentActivities);
+// Test endpoint
+router.get('/stats', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Admin dashboard stats endpoint working',
+    data: {
+      totalUsers: 100,
+      totalHosts: 50,
+      activeProperties: 25,
+      totalBookingsToday: 10
+    }
+  });
+});
 
 export default router;
