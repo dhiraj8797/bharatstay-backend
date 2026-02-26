@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import mongoose from 'mongoose';
-import { AdminSettings } from '../models/AdminSettings';
+import { AdminSettings } from '../models/Settings';
 import Booking from '../models/Booking';
 
 // Get current admin settings

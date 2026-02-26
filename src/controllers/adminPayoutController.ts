@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import Payout from '../models/Payout';
 import Booking from '../models/Booking';
 import Host from '../models/Host';
-import { AdminSettings } from '../models/AdminSettings';
+import { AdminSettings } from '../models/Settings';
 
 // Get all payouts with comprehensive filters
 export const getAllPayouts = async (req: Request, res: Response) => {
