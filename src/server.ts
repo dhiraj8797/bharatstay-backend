@@ -120,6 +120,15 @@ app.get("/health", (req: Request, res: Response) => {
 
 // Admin Console Routes - All 10 sections complete
 
+// Test endpoint for debugging
+app.get("/api/test-admin", (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: "Admin routes test endpoint working",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // 404 Handler - Only for API routes
 app.use("/api/*", (req: Request, res: Response) => {
   res.status(404).json({
