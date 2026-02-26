@@ -8,8 +8,8 @@ export const requestPayout = async (req: Request, res: Response): Promise<void> 
   try {
     const { hostId, amount, payoutMethod, bankDetails, upiId } = req.body;
 
-    // Calculate platform commission (10%)
-    const platformCommission = amount * 0.1;
+    // Calculate platform commission (6%)
+    const platformCommission = amount * 0.06;
     const netAmount = amount - platformCommission;
 
     // Verify if host has sufficient available balance
@@ -142,7 +142,7 @@ export const getPayoutStats = async (req: Request, res: Response): Promise<void>
       0
     );
 
-    const platformCommission = totalEarnings * 0.1;
+    const platformCommission = totalEarnings * 0.06;
 
     // Get payouts by status
     const completedPayouts = await Payout.find({

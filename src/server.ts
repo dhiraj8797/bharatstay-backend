@@ -8,6 +8,7 @@ import connectDB from "./config/database";
 import hostRoutes from "./routes/hostRoutes";
 import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
+import adminRoutes from "./routes/adminRoutes";
 import stayRoutes from "./routes/stayRoutes";
 import bookingRoutes from "./routes/bookingRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
@@ -71,6 +72,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/host", hostRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/stay", stayRoutes);
