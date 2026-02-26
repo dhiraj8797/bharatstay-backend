@@ -96,17 +96,17 @@ app.use("/api/host-details", hostDetailsRoutes);
 app.use("/api/referral", referralRoutes);
 app.use("/api/upi", upiRoutes);
 app.use("/api/customer-referral", customerReferralRoutes);
-app.use("/api/admin-console", adminConsoleRoutes);
-app.use("/api/admin-dashboard", adminDashboardRoutes);
-app.use("/api/admin-host-management", adminHostManagementRoutes);
-app.use("/api/admin-property-management", adminPropertyManagementRoutes);
-app.use("/api/admin-booking-management", adminBookingManagementRoutes);
-app.use("/api/admin-commission", adminCommissionRoutes);
-app.use("/api/admin-payout-management", adminPayoutRoutes);
-app.use("/api/admin-user-management", adminUserManagementRoutes);
-app.use("/api/admin-dispute-management", adminDisputeRoutes);
-app.use("/api/admin-content-management", adminContentRoutes);
-app.use("/api/admin-settings", adminSettingsRoutes);
+// app.use("/api/admin-console", adminConsoleRoutes);
+// app.use("/api/admin-dashboard", adminDashboardRoutes);
+// app.use("/api/admin-host-management", adminHostManagementRoutes);
+// app.use("/api/admin-property-management", adminPropertyManagementRoutes);
+// app.use("/api/admin-booking-management", adminBookingManagementRoutes);
+// app.use("/api/admin-commission", adminCommissionRoutes);
+// app.use("/api/admin-payout-management", adminPayoutRoutes);
+// app.use("/api/admin-user-management", adminUserManagementRoutes);
+// app.use("/api/admin-dispute-management", adminDisputeRoutes);
+// app.use("/api/admin-content-management", adminContentRoutes);
+// app.use("/api/admin-settings", adminSettingsRoutes);
 app.use("/api", contactRoutes);
 
 // Health Check
