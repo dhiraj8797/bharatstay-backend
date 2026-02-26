@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { AdminSettings } from '../models/Settings';
+// import { AdminSettings } from '../models/Settings';
 
 // Get all admin settings
 export const getAdminSettings = async (req: Request, res: Response) => {
