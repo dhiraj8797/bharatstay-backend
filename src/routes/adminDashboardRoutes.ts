@@ -3,8 +3,11 @@ import { Request, Response } from 'express';
 
 const router = Router();
 
+console.log('Admin dashboard routes loaded');
+
 // Test endpoint
 router.get('/stats', (req: Request, res: Response) => {
+  console.log('Admin dashboard stats endpoint called');
   res.json({
     success: true,
     message: 'Admin dashboard stats endpoint working',
