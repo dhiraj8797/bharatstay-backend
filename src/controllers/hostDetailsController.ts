@@ -12,6 +12,7 @@ export const getHostDetails = async (req: Request, res: Response) => {
         success: false,
         message: 'Host ID is required'
       });
+      return;
     }
 
     // Find host details
@@ -22,6 +23,7 @@ export const getHostDetails = async (req: Request, res: Response) => {
         success: false,
         message: 'Host details not found'
       });
+      return;
     }
 
     return res.status(200).json({
@@ -43,11 +45,23 @@ export const saveHostDetails = async (req: Request, res: Response) => {
     const { hostId } = req.params;
     const detailsData = req.body;
     
+    console.log('Saving host details for hostId:', hostId);
+    console.log('Details data:', detailsData);
+    
     if (!hostId) {
       return res.status(400).json({
         success: false,
         message: 'Host ID is required'
       });
+      return;
+    }
+
+    // Handle hostingSince field - convert string to number if needed
+    if (detailsData.hostingSince && typeof detailsData.hostingSince === 'string') {
+      const parsedYear = parseInt(detailsData.hostingSince);
+      if (!isNaN(parsedYear)) {
+        detailsData.hostingSince = parsedYear;
+      }
     }
 
     // Find existing host details
@@ -65,6 +79,7 @@ export const saveHostDetails = async (req: Request, res: Response) => {
         },
         { new: true, runValidators: true }
       );
+      console.log('Updated existing host details:', savedDetails);
     } else {
       // Create new details
       savedDetails = new HostDetails({
@@ -72,6 +87,7 @@ export const saveHostDetails = async (req: Request, res: Response) => {
         ...detailsData
       });
       await savedDetails.save();
+      console.log('Created new host details:', savedDetails);
     }
 
     return res.status(200).json({
@@ -81,9 +97,11 @@ export const saveHostDetails = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error saving host details:', error);
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Error saving host details',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };
@@ -98,6 +116,7 @@ export const deleteHostDetails = async (req: Request, res: Response) => {
         success: false,
         message: 'Host ID is required'
       });
+      return;
     }
 
     // Delete host details
@@ -108,6 +127,7 @@ export const deleteHostDetails = async (req: Request, res: Response) => {
         success: false,
         message: 'Host details not found'
       });
+      return;
     }
 
     return res.status(200).json({
@@ -133,6 +153,7 @@ export const getHostDetailsForGuest = async (req: Request, res: Response) => {
         success: false,
         message: 'Host ID is required'
       });
+      return;
     }
 
     // Find host details
@@ -161,6 +182,7 @@ export const getHostDetailsForGuest = async (req: Request, res: Response) => {
         success: false,
         message: 'Host details not found'
       });
+      return;
     }
 
     return res.status(200).json({
