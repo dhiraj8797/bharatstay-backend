@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
+import mongoose from 'mongoose';
 import Stay from '../models/Stay';
 import HostDashBoardStay from '../models/HostDashBoardStay';
 import HostSignUp from '../models/HostSignUp';
 import Booking from '../models/Booking';
 import Review from '../models/Review';
 import Payout from '../models/Payout';
+import StayPhoto from '../models/StayPhoto';
 
 // Sync host stays to public Stay collection
 export const syncHostStaysToPublic = async (req: Request, res: Response): Promise<Response> => {
@@ -218,9 +220,22 @@ export const searchStays = async (req: Request, res: Response): Promise<Response
     // Get total count for pagination
     const total = await HostDashBoardStay.countDocuments(searchCriteria);
 
+    // Fetch photos for all stays from StayPhoto collection
+    const stayIds = stays.map(s => s._id.toString());
+    const allPhotos = await StayPhoto.find({ stayId: { $in: stayIds } }).sort({ displayOrder: 1 });
+    
+    // Group photos by stayId
+    const photosByStayId = allPhotos.reduce((acc, photo) => {
+      const stayId = photo.stayId.toString();
+      if (!acc[stayId]) acc[stayId] = [];
+      acc[stayId].push(photo);
+      return acc;
+    }, {} as Record<string, typeof allPhotos>);
+
     // Transform results to match frontend interface
     const transformedStays = stays.map(stay => {
-      const photos = stay.photos || [];
+      const stayPhotos = photosByStayId[stay._id.toString()] || [];
+      const primaryPhoto = stayPhotos.find((p: any) => p.isPrimary) || stayPhotos[0];
       
       return {
         _id: stay._id,
@@ -231,7 +246,7 @@ export const searchStays = async (req: Request, res: Response): Promise<Response
           state: stay.state,
           country: 'India',
           coordinates: { 
-            lat: 0, // TODO: Add geocoding
+            lat: 0,
             lng: 0
           }
         },
@@ -239,13 +254,8 @@ export const searchStays = async (req: Request, res: Response): Promise<Response
         bedrooms: stay.numberOfRooms || 1,
         bathrooms: Math.ceil(stay.numberOfRooms / 2) || 1,
         maxGuests: stay.numberOfRooms * 2,
-        photos: {
-          bedroom: photos.slice(0, Math.min(5, photos.length)),
-          kitchen: photos.slice(5, Math.min(10, photos.length)),
-          hall: photos.slice(10, Math.min(15, photos.length)),
-          bathroom: photos.slice(15, Math.min(20, photos.length)),
-          extra: photos.slice(20)
-        },
+        photos: stayPhotos,
+        primaryPhoto: primaryPhoto || null,
         amenities: stay.amenities || [],
         host: {
           name: stay.host?.fullName || 'Property Host',
@@ -338,16 +348,17 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
     // Calculate max guests based on rooms (2 guests per room as standard)
     const maxGuests = stay.numberOfRooms * 2;
 
-    // Transform photos into categories
-    const photos = stay.photos || [];
-    const categorizedPhotos = {
-      bedroom: photos.slice(0, Math.min(10, photos.length)),
-      kitchen: photos.slice(10, Math.min(20, photos.length)),
-      hall: photos.slice(20, Math.min(30, photos.length)),
-      bathroom: photos.slice(30, Math.min(40, photos.length)),
-      frontHouse: photos.slice(40, Math.min(50, photos.length)),
-      extra: photos.slice(50, Math.min(60, photos.length))
-    };
+    // Fetch photos from StayPhoto collection
+    const stayPhotos = await StayPhoto.find({ stayId: new mongoose.Types.ObjectId(stayId) }).sort({ displayOrder: 1 }).lean();
+    const primaryPhoto = stayPhotos.find(p => p.isPrimary) || stayPhotos[0];
+
+    // Group photos by category for detail view
+    const photosByCategory = stayPhotos.reduce((acc, photo) => {
+      const cat = photo.category || 'other';
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(photo);
+      return acc;
+    }, {} as Record<string, typeof stayPhotos>);
 
     // Transform the data to match the frontend interface
     const transformedStay = {
@@ -359,7 +370,7 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
         state: stay.state,
         country: 'India',
         coordinates: { 
-          lat: 0, // TODO: Add geocoding to get coordinates from address
+          lat: 0,
           lng: 0
         }
       },
@@ -367,21 +378,23 @@ export const getStayDetailsFromHost = async (req: Request, res: Response): Promi
       bedrooms: stay.numberOfRooms || 1,
       bathrooms: Math.ceil(stay.numberOfRooms / 2) || 1,
       maxGuests: maxGuests,
-      photos: categorizedPhotos,
+      photos: stayPhotos,
+      primaryPhoto: primaryPhoto || null,
+      photosByCategory: photosByCategory,
       amenities: stay.amenities || [],
       host: {
         name: host.fullName,
         email: host.email,
-        profilePicture: undefined // TODO: Add profile picture to HostSignUp model
+        profilePicture: undefined
       },
       availability: {
-        dates: [], // TODO: Implement availability management
+        dates: [],
         priceVariations: []
       },
       reviews: {
-        rating: 0, // TODO: Calculate from review system
+        rating: 0,
         count: totalReviews,
-        comments: [] // TODO: Fetch from review system
+        comments: []
       },
       additionalInfo: {
         stayType: stay.stayType,
@@ -656,9 +669,34 @@ export const getHostStays = async (req: Request, res: Response): Promise<Respons
     const hostId = req.params.hostId;
     const stays = await HostDashBoardStay.find({ hostId }).sort({ createdAt: -1 });
 
+    // Fetch photos for all stays from StayPhoto collection
+    const stayIds = stays.map(s => s._id.toString());
+    const allPhotos = await StayPhoto.find({ stayId: { $in: stayIds } }).sort({ displayOrder: 1 }).lean();
+    
+    // Group photos by stayId
+    const photosByStayId = allPhotos.reduce((acc, photo) => {
+      const stayId = photo.stayId.toString();
+      if (!acc[stayId]) acc[stayId] = [];
+      acc[stayId].push(photo);
+      return acc;
+    }, {} as Record<string, typeof allPhotos>);
+
+    // Attach photos to each stay
+    const staysWithPhotos = stays.map(stay => {
+      const stayObj = stay.toObject();
+      const stayPhotos = photosByStayId[stay._id.toString()] || [];
+      const primaryPhoto = stayPhotos.find((p: any) => p.isPrimary) || stayPhotos[0];
+      
+      return {
+        ...stayObj,
+        photos: stayPhotos,
+        primaryPhoto: primaryPhoto || null
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      data: stays,
+      data: staysWithPhotos,
     });
   } catch (error: any) {
     console.error('Get host stays error:', error);
@@ -873,5 +911,3 @@ export const toggleStayStatus = async (req: Request, res: Response): Promise<Res
     });
   }
 };
-
-import mongoose from 'mongoose';

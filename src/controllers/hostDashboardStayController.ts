@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import HostDashBoardStay from '../models/HostDashBoardStay';
+import StayPhoto from '../models/StayPhoto';
+import path from 'path';
 
 // Create a new stay
 export const createStay = async (req: Request, res: Response): Promise<void> => {
@@ -101,6 +103,26 @@ export const createStay = async (req: Request, res: Response): Promise<void> => 
 
     await newStay.save();
 
+    // Create StayPhoto documents for uploaded photos
+    if (photoUrls.length > 0) {
+      const stayPhotos = photoUrls.map((url, index) => ({
+        stayId: newStay._id,
+        hostId,
+        filename: path.basename(url),
+        originalName: path.basename(url),
+        mimeType: 'image/jpeg',
+        size: 0,
+        category: 'exterior',
+        caption: '',
+        isPrimary: index === 0,
+        displayOrder: index,
+        url: url
+      }));
+
+      await StayPhoto.insertMany(stayPhotos);
+      console.log(`Created ${stayPhotos.length} StayPhoto records for stay ${newStay._id}`);
+    }
+
     res.status(201).json({
       success: true,
       message: 'Stay created successfully',
@@ -130,9 +152,34 @@ export const getHostStays = async (req: Request, res: Response): Promise<void> =
 
     const stays = await HostDashBoardStay.find(query).sort({ createdAt: -1 });
 
+    // Fetch photos for all stays from StayPhoto collection
+    const stayIds = stays.map(s => s._id.toString());
+    const allPhotos = await StayPhoto.find({ stayId: { $in: stayIds } }).sort({ displayOrder: 1 }).lean();
+    
+    // Group photos by stayId
+    const photosByStayId = allPhotos.reduce((acc, photo) => {
+      const stayId = photo.stayId.toString();
+      if (!acc[stayId]) acc[stayId] = [];
+      acc[stayId].push(photo);
+      return acc;
+    }, {} as Record<string, typeof allPhotos>);
+
+    // Attach photos to each stay
+    const staysWithPhotos = stays.map(stay => {
+      const stayObj = stay.toObject();
+      const stayPhotos = photosByStayId[stay._id.toString()] || [];
+      const primaryPhoto = stayPhotos.find((p: any) => p.isPrimary) || stayPhotos[0];
+      
+      return {
+        ...stayObj,
+        photos: stayPhotos,
+        primaryPhoto: primaryPhoto || null
+      };
+    });
+
     res.json({
       success: true,
-      stays,
+      stays: staysWithPhotos,
     });
     return;
   } catch (error) {
@@ -161,9 +208,17 @@ export const getStayById = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    // Fetch photos for this stay from StayPhoto collection
+    const stayPhotos = await StayPhoto.find({ stayId }).sort({ displayOrder: 1 }).lean();
+    const primaryPhoto = stayPhotos.find((p: any) => p.isPrimary) || stayPhotos[0];
+
     res.json({
       success: true,
-      stay,
+      stay: {
+        ...stay.toObject(),
+        photos: stayPhotos,
+        primaryPhoto: primaryPhoto || null
+      },
     });
     return;
   } catch (error) {

@@ -17,10 +17,13 @@ import placesRoutes from "./routes/placesRoutes";
 import hostBankDetailsRoutes from "./routes/hostBankDetailsRoutes";
 import hostDashboardStayRoutes from "./routes/hostDashboardStayRoutes";
 import hostDetailsRoutes from "./routes/hostDetailsRoutes";
+import stayPhotoRoutes from "./routes/stayPhotoRoutes";
 import contactRoutes from "./routes/contact";
 import referralRoutes from "./routes/referralRoutes";
 import upiRoutes from "./routes/upiRoutes";
+import hostPersonalDetailsRoutes from "./routes/hostPersonalDetailsRoutes";
 import customerReferralRoutes from "./routes/customerReferralRoutes";
+import adminRoutes from "./routes/adminRoutes";
 
 dotenv.config();
 
@@ -82,10 +85,13 @@ app.use("/api/places", placesRoutes);
 app.use("/api/host-dashboard-stay", hostDashboardStayRoutes);
 app.use("/api/host-bank-details", hostBankDetailsRoutes);
 app.use("/api/host-details", hostDetailsRoutes);
+app.use("/api/stay-photos", stayPhotoRoutes);
 app.use("/api/referral", referralRoutes);
 app.use("/api/upi", upiRoutes);
 app.use("/api/customer-referral", customerReferralRoutes);
+app.use("/api/host-personal-details", hostPersonalDetailsRoutes);
 app.use("/api", contactRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health Check
 app.get("/health", (req: Request, res: Response) => {
