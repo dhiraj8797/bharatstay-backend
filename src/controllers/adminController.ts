@@ -237,6 +237,9 @@ export const getAllBookings = async (req: Request, res: Response): Promise<void>
     }
 
     const bookings = await Booking.find(query)
+      .populate('stayId', 'stayName address city state photos stayType')
+      .populate('hostId', 'fullName email phoneNumber')
+      .populate('guestId', 'fullName email phoneNumber')
       .sort({ createdAt: -1 })
       .skip((Number(page) - 1) * Number(limit))
       .limit(Number(limit))
