@@ -5,6 +5,7 @@ export interface IPromotion extends Document {
   stayId?: mongoose.Types.ObjectId;
   title: string;
   description: string;
+  discountType: 'percentage' | 'fixed';
   discount: number;
   code: string;
   validFrom: Date;
@@ -44,6 +45,11 @@ const PromotionSchema: Schema = new Schema(
       type: String,
       trim: true,
       maxlength: 500,
+    },
+    discountType: {
+      type: String,
+      enum: ['percentage', 'fixed'],
+      default: 'percentage',
     },
     discount: {
       type: Number,

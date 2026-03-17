@@ -4,7 +4,7 @@ export interface IBooking extends Document {
   stayId: mongoose.Types.ObjectId;
   hostId: mongoose.Types.ObjectId;
   guestId: mongoose.Types.ObjectId;
-  bookingReference: string;
+  bookingReference?: string;
   checkIn: Date;
   checkOut: Date;
   guests: number;
@@ -13,7 +13,12 @@ export interface IBooking extends Document {
     baseAmount: number;
     cleaningFee: number;
     extraGuestCharge: number;
+    platformFee: number;
     discount: number;
+    gstRate: number;
+    gstAmount: number;
+    cgst: number;
+    sgst: number;
     totalAmount: number;
   };
   paymentStatus: 'pending' | 'paid' | 'refunded' | 'failed';
@@ -21,13 +26,18 @@ export interface IBooking extends Document {
   cancellationReason?: string;
   cancellationDate?: Date;
   specialRequests?: string;
-  guestDetails: {
+  travellers: Array<{
     name: string;
+    gender: 'male' | 'female' | 'other';
+    age: number;
+  }>;
+  contactInfo: {
     email: string;
     phone: string;
   };
-  createdAt: Date;
-  updatedAt: Date;
+  hasPets: boolean;
+  promoCode?: string;
+  promoDiscount?: number;
 }
 
 const BookingSchema: Schema = new Schema(
@@ -52,7 +62,7 @@ const BookingSchema: Schema = new Schema(
     },
     bookingReference: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
       uppercase: true,
     },
@@ -88,9 +98,35 @@ const BookingSchema: Schema = new Schema(
         type: Number,
         default: 0,
       },
+      platformFee: {
+        type: Number,
+        default: 10,
+        min: 0,
+      },
       discount: {
         type: Number,
         default: 0,
+        min: 0,
+      },
+      gstRate: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      gstAmount: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      cgst: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      sgst: {
+        type: Number,
+        default: 0,
+        min: 0,
       },
       totalAmount: {
         type: Number,
@@ -122,11 +158,24 @@ const BookingSchema: Schema = new Schema(
       trim: true,
       maxlength: 500,
     },
-    guestDetails: {
+    travellers: [{
       name: {
         type: String,
         required: true,
       },
+      age: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 120,
+      },
+      gender: {
+        type: String,
+        enum: ['male', 'female', 'other'],
+        required: true,
+      },
+    }],
+    contactInfo: {
       email: {
         type: String,
         required: true,
@@ -135,6 +184,20 @@ const BookingSchema: Schema = new Schema(
         type: String,
         required: true,
       },
+    },
+    hasPets: {
+      type: Boolean,
+      default: false,
+    },
+    promoCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+    },
+    promoDiscount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {

@@ -14,6 +14,10 @@ export const syncHostStaysToPublic = async (req: Request, res: Response): Promis
   try {
     const { hostId } = req.params;
 
+    // Get host info for the name
+    const host = await HostSignUp.findById(hostId).select('fullName');
+    const hostName = host?.fullName || 'Property Host';
+
     // Get all active stays from HostDashBoardStay
     const hostStays = await HostDashBoardStay.find({ 
       hostId, 
@@ -31,6 +35,7 @@ export const syncHostStaysToPublic = async (req: Request, res: Response): Promis
         // Create new public stay entry
         const publicStay = new Stay({
           hostId: hostStay.hostId,
+          hostName: hostName,
           stayName: hostStay.stayName,
           stayType: hostStay.stayType as any,
           propertyAge: hostStay.propertyAge,
@@ -241,6 +246,7 @@ export const searchStays = async (req: Request, res: Response): Promise<Response
         _id: stay._id,
         title: stay.stayName,
         description: stay.description || `Beautiful ${stay.stayType} in ${stay.city}`,
+        hostName: stay.hostName || stay.stayName || 'Property Host',
         location: {
           city: stay.city,
           state: stay.state,
@@ -257,6 +263,7 @@ export const searchStays = async (req: Request, res: Response): Promise<Response
         photos: stayPhotos,
         primaryPhoto: primaryPhoto || null,
         amenities: stay.amenities || [],
+        nearbyLandmarks: stay.nearbyLandmarks || [],
         host: {
           name: stay.host?.fullName || 'Property Host',
           email: stay.host?.email || '',
@@ -637,6 +644,7 @@ export const createStay = async (req: Request, res: Response): Promise<Response>
       ...req.body,
       photos,
       amenities: JSON.parse(req.body.amenities || '[]'),
+      nearbyLandmarks: JSON.parse(req.body.nearbyLandmarks || '[]'),
       pricing: JSON.parse(req.body.pricing || '{}'),
       capacity: JSON.parse(req.body.capacity || '{}'),
       location: {
@@ -723,6 +731,9 @@ export const updateStay = async (req: Request, res: Response): Promise<Response>
     // Parse JSON fields
     if (updateData.amenities) {
       updateData.amenities = JSON.parse(updateData.amenities);
+    }
+    if (updateData.nearbyLandmarks) {
+      updateData.nearbyLandmarks = JSON.parse(updateData.nearbyLandmarks);
     }
     if (updateData.pricing) {
       updateData.pricing = JSON.parse(updateData.pricing);

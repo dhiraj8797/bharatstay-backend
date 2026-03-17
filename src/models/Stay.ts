@@ -20,6 +20,11 @@ export interface IStay extends Document {
   photos: string[];
   coverImageIndex: number;
   amenities: string[];
+  nearbyLandmarks?: {
+    name: string;
+    type: 'railway' | 'airport' | 'temple' | 'other';
+    distance: string;
+  }[];
   pricing: {
     basePrice: number;
     weekendPrice: number;
@@ -51,6 +56,10 @@ const StaySchema: Schema = new Schema(
       ref: 'HostSignUp',
       required: true,
       index: true,
+    },
+    hostName: {
+      type: String,
+      required: true,
     },
     stayName: {
       type: String,
@@ -137,6 +146,21 @@ const StaySchema: Schema = new Schema(
       type: [String],
       default: [],
     },
+    nearbyLandmarks: [{
+      name: {
+        type: String,
+        required: true,
+      },
+      type: {
+        type: String,
+        enum: ['railway', 'airport', 'temple', 'other'],
+        default: 'other',
+      },
+      distance: {
+        type: String,
+        required: true,
+      },
+    }],
     pricing: {
       basePrice: {
         type: Number,

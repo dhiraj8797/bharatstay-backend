@@ -9,6 +9,7 @@ import {
   deletePromotion,
   applyPromotion,
   getPromotionStats,
+  validatePromoCode,
 } from '../controllers/promotionController';
 
 const router = express.Router();
@@ -34,5 +35,8 @@ router.put('/:promotionId/toggle', togglePromotionStatus);
 router.delete('/:promotionId', deletePromotion);
 router.post('/apply', applyPromotion);
 router.get('/stats/:hostId', getPromotionStats);
+
+// Guest validation route
+router.post('/validate', validatePromoCode);
 
 export default router;

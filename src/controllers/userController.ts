@@ -1,9 +1,17 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import UserSignUp from '../models/UserSignUp';
 import { validationResult } from 'express-validator';
 import { tempStorage } from '../utils/tempStorage';
 import { randomUUID } from 'crypto';
+
+// Generate JWT Token
+const generateToken = (id: string): string => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'your-secret-key', {
+    expiresIn: '30d',
+  });
+};
 
 // Generate OTP
 const generateOTP = (): string => {
@@ -55,16 +63,20 @@ export const registerUserWithPassword = async (req: Request, res: Response): Pro
 
     await user.save();
 
+    // Generate JWT token for new user
+    const token = generateToken(user._id.toString());
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
+      token,
       userId: user._id,
       user: {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
-        phoneNumber: user.phoneNumber
-      }
+        phoneNumber: user.phoneNumber,
+      },
     });
   } catch (error) {
     console.error('User registration error:', error);
@@ -127,16 +139,20 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Return success with user data (excluding password)
-    res.json({
+    // Generate JWT token
+    const token = generateToken(user._id.toString());
+
+    res.status(200).json({
       success: true,
       message: 'Login successful',
+      token,
       userId: user._id,
       user: {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
-        phoneNumber: user.phoneNumber
-      }
+        phoneNumber: user.phoneNumber,
+      },
     });
   } catch (error) {
     console.error('User login error:', error);

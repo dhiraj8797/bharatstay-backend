@@ -1,42 +1,39 @@
 import express from 'express';
 
+import { protect } from '../middleware/auth';
+
 import {
-
+  createBooking,
   getHostBookings,
-
   getUserBookings,
-
   getBookingDetails,
-
   updateBookingStatus,
-
   cancelBooking,
-
   getBookingStats,
-
+  sendConfirmationEmail,
 } from '../controllers/bookingController';
-
-
 
 const router = express.Router();
 
+// Booking management - Protected routes
 
+// Create new booking
+router.post('/', protect, createBooking);
 
-// Booking management
+router.get('/host/:hostId', protect, getHostBookings);
 
-router.get('/host/:hostId', getHostBookings);
+router.get('/user/:userId', protect, getUserBookings);
 
-router.get('/user/:userId', getUserBookings);
+router.get('/details/:bookingId', protect, getBookingDetails);
 
-router.get('/details/:bookingId', getBookingDetails);
+router.put('/:bookingId/status', protect, updateBookingStatus);
 
-router.put('/:bookingId/status', updateBookingStatus);
+router.put('/:bookingId/cancel', protect, cancelBooking);
 
-router.put('/:bookingId/cancel', cancelBooking);
+router.get('/stats/:hostId', protect, getBookingStats);
 
-router.get('/stats/:hostId', getBookingStats);
-
-
+// Send confirmation email
+router.post('/send-confirmation-email', protect, sendConfirmationEmail);
 
 export default router;
 

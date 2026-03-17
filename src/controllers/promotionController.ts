@@ -333,4 +333,86 @@ export const getPromotionStats = async (req: Request, res: Response): Promise<vo
   }
 };
 
+// Validate and apply promo code for guests
+export const validatePromoCode = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { code, bookingAmount, stayId } = req.body;
+
+    if (!code || !bookingAmount) {
+      res.status(400).json({
+        success: false,
+        message: 'Promo code and booking amount are required',
+      });
+      return;
+    }
+
+    // Find active promo code
+    const promo = await Promotion.findOne({
+      code: code.toUpperCase(),
+      active: true,
+      validFrom: { $lte: new Date() },
+      validTo: { $gte: new Date() },
+    });
+
+    if (!promo) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid or expired promo code',
+      });
+      return;
+    }
+
+    // Check if promo code has reached max usage
+    if (promo.maxUsage && promo.usedCount >= promo.maxUsage) {
+      res.status(400).json({
+        success: false,
+        message: 'Promo code usage limit reached',
+      });
+      return;
+    }
+
+    // Check minimum booking amount
+    if (promo.minBookingAmount && bookingAmount < promo.minBookingAmount) {
+      res.status(400).json({
+        success: false,
+        message: `Minimum booking amount of ₹${promo.minBookingAmount} required`,
+      });
+      return;
+    }
+
+    // Calculate discount
+    let discountAmount = 0;
+    if (promo.discountType === 'percentage') {
+      discountAmount = (bookingAmount * promo.discount) / 100;
+    } else {
+      discountAmount = promo.discount;
+    }
+
+    // Ensure discount doesn't exceed booking amount
+    discountAmount = Math.min(discountAmount, bookingAmount);
+
+    res.status(200).json({
+      success: true,
+      message: 'Promo code applied successfully',
+      data: {
+        code: promo.code,
+        discountType: promo.discountType,
+        discountValue: promo.discount,
+        discountAmount,
+        finalAmount: bookingAmount - discountAmount,
+        promoId: promo._id,
+      },
+    });
+    return;
+  } catch (error: any) {
+    console.error('Validate promo code error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to validate promo code',
+      error: error.message,
+    });
+    return;
+  }
+};
+
 import mongoose from 'mongoose';

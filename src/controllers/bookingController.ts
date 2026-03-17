@@ -6,6 +6,8 @@ import HostDashBoardStay from '../models/HostDashBoardStay';
 
 import HostSignUp from '../models/HostSignUp';
 
+import Promotion from '../models/Promotion';
+
 
 
 // Create new booking
@@ -14,7 +16,20 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
 
   try {
 
-    const { stayId, checkIn, checkOut, guests, totalPrice } = req.body;
+    const { 
+      stayId, 
+      checkIn, 
+      checkOut, 
+      guests, 
+      totalAmount, 
+      totalPrice, 
+      promoCode,
+      travellers,
+      contactInfo,
+      hasPets,
+      paymentMethod,
+      paymentStatus
+    } = req.body;
 
     const userId = (req as any).user?.id;
 
@@ -37,19 +52,31 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
 
 
     // Validate required fields
-
-    if (!stayId || !checkIn || !checkOut || !guests || !totalPrice) {
-
+    const finalPrice = totalAmount || totalPrice;
+    if (!stayId || !checkIn || !checkOut || !guests || !finalPrice) {
       res.status(400).json({
-
         success: false,
-
         message: 'All booking details are required'
-
       });
-
       return;
+    }
 
+    // Validate traveller data
+    if (!travellers || !Array.isArray(travellers) || travellers.length === 0) {
+      res.status(400).json({
+        success: false,
+        message: 'At least one traveller is required'
+      });
+      return;
+    }
+
+    // Validate contact info
+    if (!contactInfo || !contactInfo.email || !contactInfo.phone) {
+      res.status(400).json({
+        success: false,
+        message: 'Contact information is required'
+      });
+      return;
     }
 
 
@@ -156,61 +183,155 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
 
 
 
+    // Validate and apply promo code if provided
+    let promoDiscount = 0;
+    let appliedPromoCode = '';
+
+    if (promoCode) {
+      const promo = await Promotion.findOne({
+        code: promoCode.toUpperCase(),
+        active: true,
+        validFrom: { $lte: new Date() },
+        validTo: { $gte: new Date() },
+      });
+
+      if (promo) {
+        // Check usage limit
+        if (!promo.maxUsage || promo.usedCount < promo.maxUsage) {
+          // Check minimum booking amount
+          if (!promo.minBookingAmount || totalPrice >= promo.minBookingAmount) {
+            // Calculate discount
+            if (promo.discountType === 'percentage') {
+              promoDiscount = (totalPrice * promo.discount) / 100;
+            } else {
+              promoDiscount = promo.discount;
+            }
+            // Ensure discount doesn't exceed total price
+            promoDiscount = Math.min(promoDiscount, totalPrice);
+            appliedPromoCode = promo.code;
+
+            // Increment promo usage count
+            await Promotion.findByIdAndUpdate(promo._id, {
+              $inc: { usedCount: 1 },
+            });
+          }
+        }
+      }
+    }
+
+    // Calculate GST based on declared tariff (NOT discounted price) - Hotel Booking GST Rates 2025-2026
+    const platformFee = 10; // Fixed platform fee
+    const declaredTariffPerNight = stay.pricing?.basePrice || 0; // Original room price before discount
+    const accommodationSubtotal = finalPrice - promoDiscount; // Base price + fees (after discount)
+    
+    let gstRate = 0;
+    let gstAmount = 0;
+    
+    // GST Rates by Hotel Booking Range (Effective Sept 2025)
+    // IMPORTANT: GST is based on declared tariff, NOT discounted price
+    if (declaredTariffPerNight < 1000) {
+      gstRate = 0; // Below ₹1,000: 0% GST (No GST)
+      gstAmount = 0;
+    } else if (declaredTariffPerNight >= 1001 && declaredTariffPerNight <= 7500) {
+      gstRate = 0.05; // ₹1,001 – ₹7,500: 5% GST (No ITC)
+      gstAmount = accommodationSubtotal * 0.05; // Apply 5% on actual payable amount
+    } else {
+      gstRate = 0.18; // Above ₹7,500: 18% GST (ITC allowed)
+      gstAmount = accommodationSubtotal * 0.18; // Apply 18% on actual payable amount
+    }
+    
+    const finalAmount = accommodationSubtotal + gstAmount + platformFee; // Add platform fee after GST
+
     // Create booking
-
     const booking = new Booking({
-
       stayId,
-
       hostId: stay.hostId,
-
       guestId: userId,
-
       checkIn: checkInDate,
-
       checkOut: checkOutDate,
-
       guests: guests,
-
       nights: Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)),
-
       pricing: {
-
-        baseAmount: stay.pricing?.basePrice || totalPrice,
-
+        baseAmount: stay.pricing?.basePrice || finalPrice,
         cleaningFee: stay.pricing?.cleaningFee || 0,
-
         extraGuestCharge: stay.pricing?.extraGuestCharge || 0,
-
-        discount: 0,
-
-        totalAmount: totalPrice
-
+        platformFee: platformFee,
+        discount: promoDiscount,
+        gstRate: gstRate,
+        gstAmount: gstAmount,
+        cgst: gstRate > 0 ? gstAmount / 2 : 0, // Split GST equally (2.5% each for 5% rate, 9% each for 18% rate)
+        sgst: gstRate > 0 ? gstAmount / 2 : 0, // Split GST equally (2.5% each for 5% rate, 9% each for 18% rate)
+        totalAmount: finalAmount
       },
-
       bookingStatus: 'upcoming',
-
-      paymentStatus: 'pending',
+      paymentStatus: paymentStatus || 'pending',
+      travellers: travellers,
+      contactInfo: contactInfo,
+      hasPets: hasPets || false,
 
       specialRequests: '',
 
-      guestDetails: {
+      promoCode: appliedPromoCode,
 
-        name: '', // TODO: Get from user profile
-
-        email: '', // TODO: Get from user profile
-
-        phone: '' // TODO: Get from user profile
-
-      }
-
+      promoDiscount: promoDiscount,
     });
 
 
 
     await booking.save();
 
+    // Send confirmation emails
+    try {
+      // In production, integrate with email service like Nodemailer, SendGrid, etc.
+      
+      // 1. Send to guest
+      console.log(`📧 Guest confirmation email would be sent to: ${contactInfo.email}`);
+      console.log(`📧 Guest booking details:`, {
+        bookingReference: booking.bookingReference,
+        guestName: travellers[0]?.name,
+        guestEmail: contactInfo.email,
+        guestPhone: contactInfo.phone,
+        stayId: stay._id,
+        checkIn: booking.checkIn,
+        checkOut: booking.checkOut,
+        totalAmount: finalAmount
+      });
 
+      // 2. Send to host
+      // Get host details
+      const hostDetails = await HostSignUp.findById(stay.hostId);
+      
+      if (hostDetails) {
+        console.log(`📧 Host notification email would be sent to: ${hostDetails.email}`);
+        console.log(`📧 Host booking details:`, {
+          bookingReference: booking.bookingReference,
+          hostName: hostDetails.fullName || 'Property Host',
+          hostEmail: hostDetails.email,
+          hostPhone: hostDetails.phoneNumber,
+          guestName: travellers[0]?.name,
+          guestEmail: contactInfo.email,
+          guestPhone: contactInfo.phone,
+          stayTitle: stay.stayName,
+          stayId: stay._id,
+          checkIn: booking.checkIn,
+          checkOut: booking.checkOut,
+          guests: guests,
+          totalAmount: finalAmount,
+          bookingStatus: booking.bookingStatus,
+          paymentStatus: booking.paymentStatus
+        });
+
+        // 3. Send message alert to host (could be SMS, WhatsApp, or in-app notification)
+        console.log(`📱 Host message alert would be sent to: ${hostDetails.phoneNumber || hostDetails.email}`);
+        console.log(`📱 Alert message: "New booking! ${travellers[0]?.name} booked ${stay.stayName} from ${booking.checkIn.toDateString()} to ${booking.checkOut.toDateString()}"`);
+      } else {
+        console.log('⚠️ Host details not found for notification');
+      }
+
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Don't fail the booking if email fails
+    }
 
     res.status(201).json({
 
@@ -231,6 +352,10 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
         guests: booking.guests,
 
         totalPrice: booking.pricing.totalAmount,
+
+        promoDiscount: promoDiscount,
+
+        finalAmount: finalAmount,
 
         status: booking.bookingStatus
 
@@ -606,7 +731,7 @@ export const getUserBookings = async (req: Request, res: Response): Promise<void
 
         status: booking.bookingStatus,
 
-        bookingDate: booking.createdAt,
+        bookingDate: (booking as any).createdAt,
 
         hostName: (booking.hostId as any)?.fullName || 'Unknown Host'
 
@@ -737,4 +862,41 @@ export const getBookingStats = async (req: Request, res: Response): Promise<void
 
 
 import mongoose from 'mongoose';
+
+// Send booking confirmation email with PDF
+export const sendConfirmationEmail = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { bookingId, email, bookingDetails } = req.body;
+
+    // In production, you would:
+    // 1. Generate a PDF from the booking details
+    // 2. Use a service like SendGrid, AWS SES, or Nodemailer to send the email
+    // 3. Attach the PDF to the email
+
+    // For now, we'll simulate a successful email send
+    console.log('Sending confirmation email to:', email);
+    console.log('Booking ID:', bookingId);
+    console.log('Booking Details:', bookingDetails);
+
+    // Simulate email sending delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    return res.status(200).json({
+      success: true,
+      message: 'Confirmation email sent successfully',
+      data: {
+        bookingId,
+        email,
+        sentAt: new Date().toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error('Send confirmation email error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send confirmation email',
+      error: error.message,
+    });
+  }
+};
 

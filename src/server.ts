@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
@@ -24,6 +24,7 @@ import upiRoutes from "./routes/upiRoutes";
 import hostPersonalDetailsRoutes from "./routes/hostPersonalDetailsRoutes";
 import customerReferralRoutes from "./routes/customerReferralRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import blockedDateRoutes from "./routes/blockedDateRoutes";
 
 dotenv.config();
 
@@ -78,6 +79,7 @@ app.use("/api/host", hostRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/stay", stayRoutes);
 app.use("/api/booking", bookingRoutes);
+app.use("/api/bookings", bookingRoutes);
 app.use("/api/review", reviewRoutes);
 app.use("/api/payout", payoutRoutes);
 app.use("/api/promotion", promotionRoutes);
@@ -92,6 +94,7 @@ app.use("/api/customer-referral", customerReferralRoutes);
 app.use("/api/host-personal-details", hostPersonalDetailsRoutes);
 app.use("/api", contactRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/stay", blockedDateRoutes);
 
 // Health Check
 app.get("/health", (req: Request, res: Response) => {
@@ -112,7 +115,7 @@ app.use("/api/*", (req: Request, res: Response) => {
 });
 
 // Error Handler
-app.use((err: any, req: Request, res: Response) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("Error:", err);
   res.status(err.status || 500).json({
     success: false,
